@@ -1,6 +1,6 @@
 import type { Building, BuildingKind, GameState } from '../model';
 import { BUILDINGS } from '../../../game/catalog';
-import { canAfford, payCost, produceResources } from '../../../game/economy';
+import { canAfford, payCost } from '../../../game/economy';
 
 const SLOTS = [
   {x:-8.2,z:1.2},{x:-5.2,z:1.2},{x:-8.2,z:5.2},{x:-5.2,z:5.2},
@@ -20,7 +20,7 @@ export function queueBuilding(state: GameState, kind: BuildingKind): GameState {
   if (!slot) return {...state,message:'NO AVAILABLE CONSTRUCTION PLOT INSIDE THE FORTRESS'};
   const building: Building = {
     id:'BLD-'+String(state.nextBuildingId).padStart(3,'0'),kind,level:1,hp:100,maxHp:100,
-    ...slot,status:'constructing',remaining:spec.seconds,buildSeconds:spec.seconds,
+    ...slot,status:'constructing',remaining:spec.seconds,buildSeconds:spec.seconds,powered:false,
   };
   return {...state,resources:payCost(state.resources,spec.cost),buildings:[...state.buildings,building],
     nextBuildingId:state.nextBuildingId+1,message:spec.name+' CONSTRUCTION STARTED'};
@@ -30,10 +30,9 @@ export function advanceConstruction(state: GameState): GameState {
   const buildings = state.buildings.map(b=>{
     if(b.status!=='constructing') return b;
     const remaining=Math.max(0,b.remaining-1);
-    return {...b,remaining,status:remaining===0?'active' as const:'constructing' as const};
+    return {...b,remaining,status:remaining===0?'active' as const:'constructing' as const,powered:false};
   });
   const completed=state.buildings.find((b,i)=>b.status==='constructing'&&buildings[i].status==='active');
   const progressed={...state,buildings};
-  const withIncome={...progressed,resources:produceResources(progressed)};
-  return completed ? {...withIncome,message:BUILDINGS.find(s=>s.kind===completed.kind)?.name+' CONSTRUCTION COMPLETE'} : withIncome;
+  return completed ? {...progressed,message:BUILDINGS.find(s=>s.kind===completed.kind)?.name+' CONSTRUCTION COMPLETE'} : progressed;
 }
