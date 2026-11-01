@@ -61,7 +61,6 @@ export const INITIAL_LOGISTICS = {
     {id:2,x:BASE.x+3,z:BASE.z+3.5,phase:'walking' as const},
     {id:3,x:BASE.x+4,z:BASE.z+3,phase:'walking' as const},
   ],
-  worker:{x:0,z:0},
   truck:{x:BASE.x,z:BASE.z,phase:'to-mine' as const,timer:0},
   cargo:{...ZERO},
   delivered:0,
