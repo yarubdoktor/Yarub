@@ -38,7 +38,7 @@ export class SimulationRuntime implements SimulationPort {
           units: next.units.map(unit => {
             if (unit.faction !== 'player' || unit.hp <= 0) return unit;
             const shouldSelect = selected.has(unit.id);
-            return { ...unit, selected: command.additive ? unit.selected !== shouldSelect && (shouldSelect || unit.selected) : shouldSelect };
+            return { ...unit, selected: command.additive ? (shouldSelect ? !unit.selected : unit.selected) : shouldSelect };
           }),
         };
         break;
