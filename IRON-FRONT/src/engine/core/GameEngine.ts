@@ -35,7 +35,7 @@ export class GameEngine {
       ticked,
     );
     this.events.emit('engine:tick', { tick: next.tick, deltaSeconds });
-    if (next.outcome !== previous.outcome && next.outcome !== 'playing') {
+    if (next.outcome === 'victory' || next.outcome === 'defeat') {
       this.events.emit('mission:outcome', { outcome: next.outcome });
     }
     return next;
