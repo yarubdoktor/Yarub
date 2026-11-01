@@ -76,3 +76,5 @@ button,.resources,.brand,.map-label,.status-stack,.map-coords,.unit-hint,.panel-
 .action-row button{white-space:nowrap} 
 @media(max-width:700px){.action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.action-row button{min-width:0;padding:8px 3px;font-size:8px}}
 .resource-warning,.resource-ready{display:block;margin-top:5px;font-size:11px;font-style:normal;font-weight:700}.resource-warning{color:#e6a14b}.resource-ready{color:#7dbb91}
+
+.grid-status{display:block;margin-top:4px;color:#d5b66d;font-size:8px;font-weight:600}.building-offline{font-size:8px;color:#e6a14b;font-weight:700}@media(max-width:700px){.grid-status{font-size:6px}.building-offline{font-size:7px}}

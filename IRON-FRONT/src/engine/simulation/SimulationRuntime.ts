@@ -4,6 +4,7 @@ import type { GameEngine } from '../core/GameEngine';
 import { queueBuilding } from './systems/buildingSystem';
 import { issueAttack, issueAttackBase, issueMove, holdSelected } from './systems/combatSystem';
 import { queueUnit } from './systems/trainingSystem';
+import { normalizeEconomyState } from './systems/economySystem';
 
 /**
  * Owns the authoritative single-player state.
@@ -14,7 +15,7 @@ export class SimulationRuntime implements SimulationPort {
   private listeners = new Set<(snapshot: SimulationSnapshot) => void>();
 
   constructor(private readonly engine: GameEngine, initialState: GameState) {
-    this.state = initialState;
+    this.state = normalizeEconomyState(initialState);
   }
 
   getSnapshot(): SimulationSnapshot {
@@ -87,9 +88,9 @@ export class SimulationRuntime implements SimulationPort {
     if (next !== this.state) this.publish(next);
   }
 
-  /** Used by save-game loading and mission restart; the supplied state is normalized by the caller. */
+  /** Legacy and current saves are normalized at the simulation boundary. */
   restore(snapshot: GameState): void {
-    this.publish(snapshot);
+    this.publish(normalizeEconomyState(snapshot));
   }
 
   private publish(next: GameState): void {

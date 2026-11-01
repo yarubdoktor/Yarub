@@ -53,11 +53,47 @@ function UnitMesh({unit,onSelect}:{unit:Unit;onSelect:(id:number,enemy:boolean,m
   </group>;
 }
 
+
+function MineLogistics({state}:{state:GameState}) {
+  const logistics=state.logistics;
+  if(!logistics)return null;
+  const mine=logistics.mine,truck=logistics.truck;
+  return <group>
+    <mesh position={[8,.025,8.5]} rotation={[0,-Math.atan2(mine.z-4,mine.x+12),0]} receiveShadow>
+      <boxGeometry args={[43,.055,2.6]}/><meshStandardMaterial color="#625c4c" roughness={1}/>
+    </mesh>
+    <mesh position={[8,.06,8.5]} rotation={[0,-Math.atan2(mine.z-4,mine.x+12),0]}>
+      <boxGeometry args={[43,.025,.16]}/><meshBasicMaterial color="#b7a27a" transparent opacity={.42}/>
+    </mesh>
+    <group position={[mine.x,0,mine.z]}>
+      <mesh position={[0,.08,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[3.1,4.2,40]}/><meshStandardMaterial color="#88785c"/></mesh>
+      <mesh position={[0,.12,0]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[2.9,40]}/><meshStandardMaterial color="#3c3830"/></mesh>
+      {Array.from({length:5},(_,i)=><mesh key={i} position={[-2.5+i*1.2,.55+(i%2)*.22,-2.1+(i%3)*.65]} rotation={[.12,i*.6,.18]} castShadow><dodecahedronGeometry args={[.72+(i%2)*.16,0]}/><meshStandardMaterial color={i%2?"#9a8b70":"#706b5d"} roughness={1}/></mesh>)}
+      <mesh position={[0,1.55,-2.4]} castShadow><boxGeometry args={[.18,3.1,.18]}/><meshStandardMaterial color="#74674e"/></mesh>
+      <mesh position={[0,3.05,-2.4]}><boxGeometry args={[3.8,.16,.16]}/><meshStandardMaterial color="#9d865b" metalness={.45}/></mesh>
+      <mesh position={[1.65,2.45,-2.4]}><cylinderGeometry args={[.42,.42,.18,12]}/><meshStandardMaterial color="#343a36" metalness={.65}/></mesh>
+      <mesh position={[0,4.1,0]}><planeGeometry args={[5.8,1.1]}/><meshBasicMaterial color="#c6a66b" side={2}/></mesh>
+    </group>
+    {logistics.workers.map((w,i)=><group key={w.id} position={[w.x,.08,w.z]}>
+      <mesh position={[0,.48,0]} castShadow><capsuleGeometry args={[.19,.48,4,7]}/><meshStandardMaterial color={i%2?"#c6a66b":"#a9b5a0"}/></mesh>
+      <mesh position={[0,.88,0]} castShadow><sphereGeometry args={[.17,10,8]}/><meshStandardMaterial color="#c49a72"/></mesh>
+      <mesh position={[.24,.44,.02]} rotation={[0,0,-.35]}><cylinderGeometry args={[.045,.055,.48,6]}/><meshStandardMaterial color="#6c5942"/></mesh>
+    </group>)}
+    <group position={[truck.x,.08,truck.z]}>
+      <mesh position={[0,.55,0]} castShadow><boxGeometry args={[2.05,.82,1.25]}/><meshStandardMaterial color="#657b68" metalness={.35} roughness={.7}/></mesh>
+      <mesh position={[-.62,1.02,0]} castShadow><boxGeometry args={[.72,.72,1.2]}/><meshStandardMaterial color="#82958a" metalness={.25}/></mesh>
+      <mesh position={[-.62,1.06,.62]}><boxGeometry args={[.38,.3,.025]}/><meshBasicMaterial color="#263b40"/></mesh>
+      {[[-.62,-.48],[-.62,.48],[.62,-.48],[.62,.48]].map(([x,z],i)=><mesh key={i} position={[x,.2,z]} rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.23,.23,.16,12]}/><meshStandardMaterial color="#202522"/></mesh>)}
+      <mesh position={[.58,1.03,0]}><boxGeometry args={[.05,.1,1.25]}/><meshBasicMaterial color="#d4b46f"/></mesh>
+    </group>
+  </group>;
+}
+
 export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSelect:(id:number,enemy:boolean,multi:boolean)=>void;onMoveOrder:(x:number,z:number)=>void}) {
   return <Canvas shadows camera={{position:[-1,25,31],fov:42}} dpr={[1,1.5]}>
     <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',45,145]}/>
     <ambientLight intensity={.68}/><directionalLight position={[-12,24,8]} intensity={2.15} castShadow shadow-mapSize={[2048,2048]}/>
-    <Terrain onMoveOrder={onMoveOrder}/><FortressWalls/>
+    <Terrain onMoveOrder={onMoveOrder}/><FortressWalls/><MineLogistics state={state}/>
     {state.rallyPoint&&<group position={[state.rallyPoint.x,.035,state.rallyPoint.z]}>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.15,1.42,48]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.95}/></mesh>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.18,.28,24]}/><meshBasicMaterial color="#d9f8ff"/></mesh>
