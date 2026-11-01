@@ -48,15 +48,14 @@ function allocatePower(buildings:Building[]):{buildings:Building[];generation:nu
 export function advanceEconomy(state:GameState):GameState {
   const allocation=allocatePower(state.buildings);
   const resourceCapacity=calculateCapacity({...state,buildings:allocation.buildings});
-  const income:Resources={steel:2,fuel:1,power:0,ammo:0};
+  const income:Resources={steel:0,fuel:0,power:0,ammo:0};
   for(const building of allocation.buildings) {
     if(!building.powered)continue;
     const spec=BUILDINGS.find(item=>item.kind===building.kind);
     if(!spec?.income)continue;
-    income.steel+=spec.income.steel??0;
-    income.fuel+=spec.income.fuel??0;
+    // Resource extraction is handled by the unified mine logistics loop.
+    // Power stations remain the only building-based resource generator.
     income.power+=spec.income.power??0;
-    income.ammo+=spec.income.ammo??0;
   }
   const resources:Resources={
     steel:Math.min(resourceCapacity.steel,state.resources.steel+income.steel),
