@@ -51,7 +51,7 @@ export function advanceLogistics(state:GameState,deltaSeconds:number):GameState 
       return {...state,resources,logistics:{...logistics,elapsed,workers,truck,cargo:{...ZERO},delivered:delivered+1}};
     }
   }
-  return {...state,logistics:{...logistics,elapsed,workers,worker,truck,cargo,delivered}};
+  return {...state,logistics:{...logistics,elapsed,workers,truck,cargo,delivered}};
 }
 
 export const INITIAL_LOGISTICS = {
