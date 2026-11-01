@@ -7,9 +7,11 @@ export const initialGameState: GameState = {
     {id:'BLD-000',kind:'barracks',level:1,hp:100,maxHp:100,x:-8.2,z:5.2,status:'active',remaining:0,buildSeconds:0},
   ],
   units:[
-    {id:1,x:-3.2,z:2.5,hp:100,kind:'tank',selected:false},
-    {id:2,x:-2.2,z:4.2,hp:80,kind:'infantry',selected:false},
-    {id:3,x:-3.7,z:5.3,hp:80,kind:'infantry',selected:false},
+    {id:1,faction:'player',x:-3.2,z:2.5,hp:100,maxHp:100,kind:'tank',selected:false,order:'idle',targetX:-3.2,targetZ:2.5,targetId:null,range:5.5,damage:24,speed:1.35,cooldown:0},
+    {id:2,faction:'player',x:-2.2,z:4.2,hp:80,maxHp:80,kind:'infantry',selected:false,order:'idle',targetX:-2.2,targetZ:4.2,targetId:null,range:3.8,damage:12,speed:1.7,cooldown:0},
+    {id:3,faction:'player',x:-3.7,z:5.3,hp:80,maxHp:80,kind:'infantry',selected:false,order:'idle',targetX:-3.7,targetZ:5.3,targetId:null,range:3.8,damage:12,speed:1.7,cooldown:0},
+    {id:101,faction:'enemy',x:12.2,z:1.2,hp:115,maxHp:115,kind:'tank',selected:false,order:'idle',targetX:12.2,targetZ:1.2,targetId:null,range:5.2,damage:18,speed:1.05,cooldown:0},
+    {id:102,faction:'enemy',x:14.2,z:5.4,hp:75,maxHp:75,kind:'infantry',selected:false,order:'idle',targetX:14.2,targetZ:5.4,targetId:null,range:3.4,damage:9,speed:1.35,cooldown:0},
   ],
-  enemyHp:100,baseHp:100,tick:0,message:'FORTRESS ONLINE — COMMAND AUTHORIZED',nextBuildingId:1,
+  enemyHp:100,baseHp:100,tick:0,message:'FORTRESS ONLINE — SELECT UNITS AND ISSUE ORDERS',nextBuildingId:1,nextUnitId:4,
 };
