@@ -16,8 +16,11 @@ export type Unit = {
 };
 export type TrainingOrder = { id:number; kind:UnitKind; remaining:number; seconds:number };
 export type GameOutcome = 'playing' | 'victory' | 'defeat';
+export type LogisticsWorker = {id:number;x:number;z:number;phase:'walking'|'working'};
+export type LogisticsTruck = {x:number;z:number;phase:'to-mine'|'loading'|'to-base'|'unloading';timer:number};
+export type LogisticsState = {mine:{x:number;z:number};workers:LogisticsWorker[];truck:LogisticsTruck;cargo:Resources;delivered:number;elapsed:number};
 export type GameState = {
-  resources:Resources; resourceCapacity:Resources; powerGrid:PowerGrid;
+  resources:Resources; resourceCapacity:Resources; powerGrid:PowerGrid; logistics:LogisticsState;
   buildings:Building[]; units:Unit[]; trainingQueue:TrainingOrder[];
   enemyHp:number; baseHp:number; tick:number; wave:number; outcome:GameOutcome;
   /** Global rally point used by newly trained friendly reinforcements. */
