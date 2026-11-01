@@ -134,7 +134,7 @@ export default function App() {
       <div className="map-label"><span className="live-dot"/> عملية الستار الحديدي <small>القطاع المحصّن 07 / الموجة {game.wave} / القيادة التكتيكية</small></div>
       <div className="map-stage"><FortressScene state={game} onSelect={(id,enemy,multi)=>selectUnit(id,enemy,multi||addMode)} onMoveOrder={moveUnits}/></div><div className="map-vignette"/>
       <div className="status-stack"><div><small>قاعدة قواتك</small><b>{game.baseHp}% <span className="health"><i style={{width:game.baseHp+'%'}}/></span></b></div><div className="enemy"><small>مقر العدو</small><b>{game.enemyHp}% <span className="health"><i style={{width:game.enemyHp+'%'}}/></span></b></div></div>
-      <div className="map-coords">قواتك {playerUnits.length} <span>•</span> العدو {enemyUnits.length} <span>•</span> الموجة {game.wave}</div>
+      <div className="map-coords">قواتك {playerUnits.length} <span>•</span> العدو {enemyUnits.length} <span>•</span> الموجة {game.wave} <span>•</span> شحنات المنجم {game.logistics.delivered}</div>
       <div className="unit-hint">{rallyMode?'تحديد نقطة التجمع نشط • اضغط على المكان المطلوب':moveMode?'أمر الحركة نشط • اضغط على وجهة التحرك':selectedCount?'الوحدات المحددة: '+selectedCount:'اضغط على جندي أو دبابة من قواتك لتحديدها • اضغط على العدو لمهاجمته'}</div>
       {game.outcome!=='playing'&&<div className="mission-overlay"><div className="mission-card"><small>عملية الستار الحديدي</small><h2>{game.outcome==='victory'?'انتصار':'هزيمة'}</h2><p>{game.outcome==='victory'?'تم تدمير مقر العدو وتأمين القطاع.':'تم تدمير مقر قيادتك وخسرت القطاع.'}</p><button onClick={restart}>إعادة المهمة</button></div></div>}
     </section>
