@@ -14,6 +14,6 @@ export const initialGameState:GameState = {
     {id:102,faction:'enemy',x:14.2,z:5.4,hp:75,maxHp:75,kind:'infantry',selected:false,order:'idle',targetX:14.2,targetZ:5.4,targetId:null,range:3.4,damage:9,speed:1.35,cooldown:0},
   ],
   trainingQueue:[],enemyHp:100,baseHp:100,tick:0,wave:0,outcome:'playing',
-  message:'FORTRESS ONLINE — BUILD YOUR FORCE AND DESTROY THE HOSTILE HQ',
+  message:'القاعدة جاهزة — جهّز قواتك ودمّر مقر العدو.',
   nextBuildingId:1,nextUnitId:4,nextTrainingId:1,
 };
