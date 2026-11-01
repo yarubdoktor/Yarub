@@ -21,8 +21,9 @@ export function queueUnit(state:GameState,kind:UnitKind):GameState {
 
 function createUnit(id:number,kind:UnitKind,rallyPoint:GameState['rallyPoint']):Unit {
   const tank=kind==='tank';
-  return {id,faction:'player',x:-4.1,z:8.2+(id%3)*1.1,hp:tank?120:80,maxHp:tank?120:80,kind,
-    selected:false,order:'idle',targetX:-4.1,targetZ:8.2+(id%3)*1.1,targetId:null,
+  const x=-4.1,z=8.2+(id%3)*1.1;
+  return {id,faction:'player',x,z,hp:tank?120:80,maxHp:tank?120:80,kind,
+    selected:false,order:rallyPoint?'move':'idle',targetX:rallyPoint?.x??x,targetZ:rallyPoint?.z??z,targetId:null,
     range:tank?6:3.8,damage:tank?27:12,speed:tank?1.2:1.65,cooldown:0};
 }
 
