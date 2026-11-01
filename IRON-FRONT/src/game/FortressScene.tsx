@@ -58,6 +58,11 @@ export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSe
     <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',30,75]}/>
     <ambientLight intensity={.68}/><directionalLight position={[-12,24,8]} intensity={2.15} castShadow shadow-mapSize={[2048,2048]}/>
     <Terrain onMoveOrder={onMoveOrder}/><FortressWalls/>
+    {state.rallyPoint&&<group position={[state.rallyPoint.x,.035,state.rallyPoint.z]}>
+      <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.15,1.42,48]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.95}/></mesh>
+      <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.18,.28,24]}/><meshBasicMaterial color="#d9f8ff"/></mesh>
+      <mesh position={[0,1.15,0]}><cylinderGeometry args={[.035,.035,2.3,8]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.55}/></mesh>
+    </group>}
     {state.buildings.map(b=><Structure key={b.id} building={b}/>)}
     <group position={[20,0,-4]}><mesh position={[0,.6,0]} castShadow><boxGeometry args={[4,1.2,3.6]}/><meshStandardMaterial color="#8e3b32" metalness={.5}/></mesh><mesh position={[0,1.55,0]}><boxGeometry args={[2,.8,2]}/><meshStandardMaterial color="#542a27"/></mesh><mesh position={[0,2.3,0]}><sphereGeometry args={[.13,8,8]}/><meshBasicMaterial color="#ff503d"/></mesh></group>
     {state.units.map(u=><UnitMesh key={u.id} unit={u} onSelect={onSelect}/>)}
