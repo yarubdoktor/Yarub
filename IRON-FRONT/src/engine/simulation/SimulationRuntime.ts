@@ -57,6 +57,15 @@ export class SimulationRuntime implements SimulationPort {
         next = issueAttackBase({ ...next, units: chosen });
         break;
       }
+      case 'units/set-rally-point': {
+        const x=Math.max(-38,Math.min(38,command.x));
+        const z=Math.max(-28,Math.min(28,command.z));
+        next={...next,rallyPoint:{x,z},message:'RALLY POINT DESIGNATED'};
+        break;
+      }
+      case 'units/clear-rally-point':
+        next={...next,rallyPoint:null,message:'RALLY POINT CLEARED'};
+        break;
       case 'units/hold': {
         const chosen = next.units.map(unit => ({ ...unit, selected: unit.faction === 'player' && selected.has(unit.id) }));
         next = holdSelected({ ...next, units: chosen });
