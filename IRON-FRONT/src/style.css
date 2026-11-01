@@ -25,3 +25,51 @@
 .mission-card h2{margin:8px 0;font:800 38px 'Barlow Condensed';letter-spacing:3px;color:#e4c47a}
 .mission-card p{font-size:11px;color:#b4c0b7;line-height:1.5;margin-bottom:18px}
 @media(max-width:700px){.army-panel{grid-template-columns:1fr;max-height:230px;gap:5px}.recruit-card{padding:6px}.recruit-card b{font-size:10px}.recruit-card small,.recruit-card em{font-size:6px}.recruit-card button{padding:7px 9px;font-size:9px}.queue-panel{grid-column:1}.garrison-stats{gap:13px;flex-wrap:wrap}.garrison-stat b{font-size:18px}}
+
+/* Arabic interface layer */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+:root{font-family:'Cairo',Tahoma,Arial,sans-serif}
+button,.resources,.brand,.map-label,.status-stack,.map-coords,.unit-hint,.panel-head,.tabs,.briefing,.action-row,.construction-card,.recruit-card,.queue-panel,.garrison-stats,.footer-line,.mission-card{font-family:'Cairo',Tahoma,Arial,sans-serif}
+.app-shell{direction:rtl}
+.brand strong{letter-spacing:1px}
+.brand span{letter-spacing:0;font-size:9px}
+.resources{gap:clamp(8px,2vw,25px)}
+.resources small,.status-stack small,.panel-head small{letter-spacing:0;font-size:10px}
+.save-btn,.tabs button,.action-row button,.construction-card button{letter-spacing:0;font-family:'Cairo',Tahoma,Arial,sans-serif}
+.map-label{left:auto;right:25px;letter-spacing:0}
+.map-label small{letter-spacing:0}
+.status-stack{right:auto;left:24px}
+.map-coords{left:auto;right:25px;letter-spacing:0}
+.unit-hint{right:auto;left:24px;letter-spacing:0}
+.panel-head h1{letter-spacing:0}
+.online{letter-spacing:0}
+.tabs{justify-content:flex-start}
+.tabs button{letter-spacing:0}
+.briefing b{letter-spacing:0}
+.briefing p{line-height:1.7}
+.action-row{flex-wrap:wrap}
+.action-row button{letter-spacing:0}
+.building-copy b{letter-spacing:0}
+.building-copy small{font-family:'Cairo',Tahoma,Arial,sans-serif;font-size:9px}
+.building-copy em{font-family:'Cairo',Tahoma,Arial,sans-serif}
+.built-label{letter-spacing:0}
+.recruit-card b,.queue-head b{letter-spacing:0}
+.recruit-card small,.recruit-card em{font-family:'Cairo',Tahoma,Arial,sans-serif;font-size:8px}
+.queue-head small,.garrison-stat small{letter-spacing:0}
+.footer-line{letter-spacing:0;line-height:1.8}
+.tick{float:left}
+.mission-card small{letter-spacing:0}
+.mission-card h2{letter-spacing:0}
+@media(max-width:700px){
+ .map-label{right:10px;left:auto}
+ .status-stack{left:8px;right:auto}
+ .map-coords{right:10px;left:auto}
+ .unit-hint{left:8px;right:auto}
+ .resources{gap:7px}
+ .resources small{font-size:7px;letter-spacing:0}
+ .brand span{font-size:6px;letter-spacing:0}
+ .tabs button{padding:8px 10px;font-size:10px}
+ .action-row button{font-size:9px}
+ .building-copy small{font-size:8px}
+ .footer-line{font-size:8px}
+}
