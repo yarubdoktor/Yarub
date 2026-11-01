@@ -11,6 +11,8 @@ export type GameCommand =
   | { type: 'units/attack'; unitIds: number[]; targetUnitId: number }
   | { type: 'units/attack-base'; unitIds: number[] }
   | { type: 'units/hold'; unitIds: number[] }
+  | { type: 'units/set-rally-point'; x:number; z:number }
+  | { type: 'units/clear-rally-point' }
   | { type: 'buildings/queue'; buildingKind: BuildingKind }
   | { type: 'units/train'; unitKind: UnitKind };
 
