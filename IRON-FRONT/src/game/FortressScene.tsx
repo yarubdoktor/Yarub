@@ -6,16 +6,44 @@ import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
 import type { Building, BuildingKind, GameState, Unit } from './types';
 
 function Terrain({onMoveOrder}:{onMoveOrder:(x:number,z:number)=>void}) {
-  const trees=useMemo(()=>Array.from({length:110},(_,i)=>({x:Math.sin(i*17.31)*66,z:Math.cos(i*9.17)*38,s:.65+(i%4)*.16})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5),[]);
+  const dressing=useMemo(()=>{
+    const trees=Array.from({length:126},(_,i)=>({x:Math.sin(i*17.31)*67,z:Math.cos(i*9.17)*39,s:.72+(i%5)*.13,tone:i%4})).filter(p=>(Math.abs(p.x)>6||Math.abs(p.z)>6)&&!(p.x>30&&p.z<2&&p.z>-17));
+    const rocks=Array.from({length:74},(_,i)=>({x:Math.sin(i*8.73+2)*67,z:Math.cos(i*11.19+1)*39,s:.22+(i%5)*.12,r:i*1.71,tone:i%3})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5);
+    const scrub=Array.from({length:190},(_,i)=>({x:Math.sin(i*13.17+4)*66,z:Math.cos(i*7.91+3)*38,s:.45+(i%4)*.18,r:i*.83,tone:i%4})).filter(p=>(Math.abs(p.x)>5||Math.abs(p.z)>5)&&!(p.x>29&&p.z<2&&p.z>-17));
+    const groundScars=Array.from({length:34},(_,i)=>({x:Math.sin(i*4.13)*59,z:Math.cos(i*6.31)*34,sx:1.4+(i%4)*.8,sz:.5+(i%3)*.35,r:i*.91}));
+    return {trees,rocks,scrub,groundScars};
+  },[]);
+  const treeColors=['#263c31','#304838','#354b3a','#293f35'];
+  const scrubColors=['#526047','#64704c','#454f3c','#777052'];
   return <group>
-    <mesh rotation={[-Math.PI/2,0,0]} receiveShadow
-      onClick={e=>{e.stopPropagation();onMoveOrder(e.point.x,e.point.z);}}>
-      <planeGeometry args={[140,90]}/><meshStandardMaterial color="#29352f" roughness={1}/></mesh>
-    <gridHelper args={[140,140,'#566253','#39463d']} position={[0,.018,0]}/>
-    {trees.map((t,i)=><group key={i} position={[t.x,0,t.z]} scale={t.s}>
-      <mesh position={[0,.7,0]} castShadow><cylinderGeometry args={[.13,.2,1.4,6]}/><meshStandardMaterial color="#514538"/></mesh>
-      <mesh position={[0,1.75,0]} castShadow><coneGeometry args={[.85,2.2,7]}/><meshStandardMaterial color="#263d32"/></mesh>
+    <mesh rotation={[-Math.PI/2,0,0]} receiveShadow onClick={e=>{e.stopPropagation();onMoveOrder(e.point.x,e.point.z);}}>
+      <planeGeometry args={[140,90]}/><meshStandardMaterial color="#3b493b" roughness={1}/>
+    </mesh>
+    <mesh position={[0,.012,0]} rotation={[-Math.PI/2,0,0]} receiveShadow>
+      <planeGeometry args={[44,29]}/><meshStandardMaterial color="#55584a" roughness={.96}/>
+    </mesh>
+    <mesh position={[-12,.022,4]} rotation={[-Math.PI/2,0,0]}>
+      <planeGeometry args={[39,18]}/><meshStandardMaterial color="#66665a" roughness={.92}/>
+    </mesh>
+    {dressing.groundScars.map((p,i)=><mesh key={'scar'+i} position={[p.x,.025,p.z]} rotation={[-Math.PI/2,0,p.r]}>
+      <circleGeometry args={[1,12]}/><meshBasicMaterial color="#6a684f" transparent opacity={.13}/>
+    </mesh>)}
+    {dressing.trees.map((t,i)=><group key={'tree'+i} position={[t.x,0,t.z]} rotation={[0,t.tone*.7,0]} scale={t.s}>
+      <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.13,.23,1.45,7]}/><meshStandardMaterial color="#514638" roughness={1}/></mesh>
+      <mesh position={[0,1.72,0]} castShadow><coneGeometry args={[.92,2.35,7]}/><meshStandardMaterial color={treeColors[t.tone]} roughness={1}/></mesh>
+      <mesh position={[.12,2.12,.04]} castShadow><coneGeometry args={[.66,1.7,7]}/><meshStandardMaterial color={treeColors[(t.tone+1)%4]} roughness={1}/></mesh>
     </group>)}
+    {dressing.rocks.map((p,i)=><mesh key={'rock'+i} position={[p.x,p.s*.38,p.z]} rotation={[p.r*.12,p.r,p.r*.08]} scale={[1.3,1,1.1]} castShadow>
+      <dodecahedronGeometry args={[p.s,0]}/><meshStandardMaterial color={p.tone===0?'#777666':p.tone===1?'#686b60':'#8a806d'} roughness={1}/>
+    </mesh>)}
+    {dressing.scrub.map((p,i)=><group key={'scrub'+i} position={[p.x,.02,p.z]} rotation={[0,p.r,0]} scale={p.s}>
+      <mesh position={[0,.18,0]} castShadow><coneGeometry args={[.34,.48,5]}/><meshStandardMaterial color={scrubColors[p.tone]} roughness={1}/></mesh>
+      <mesh position={[.2,.12,.08]} rotation={[0,.8,0]}><coneGeometry args={[.22,.3,5]}/><meshStandardMaterial color={scrubColors[(p.tone+1)%4]} roughness={1}/></mesh>
+    </group>)}
+    <group position={[-12,.04,4]}>
+      <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[10.1,10.35,64]}/><meshBasicMaterial color="#b19b6d" transparent opacity={.38}/></mesh>
+      <mesh position={[0,.015,0]}><boxGeometry args={[.08,.02,17]}/><meshBasicMaterial color="#c2ae7b" transparent opacity={.3}/></mesh>
+    </group>
   </group>;
 }
 
