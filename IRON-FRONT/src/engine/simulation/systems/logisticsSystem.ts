@@ -16,7 +16,6 @@ export function advanceLogistics(state:GameState,deltaSeconds:number):GameState 
   const logistics=state.logistics;
   if(!logistics)return state;
   let elapsed=logistics.elapsed+deltaSeconds;
-  let worker={...logistics.worker};
   let truck={...logistics.truck};
   let cargo={...logistics.cargo};
   let delivered=logistics.delivered;
@@ -49,7 +48,7 @@ export function advanceLogistics(state:GameState,deltaSeconds:number):GameState 
         ammo:Math.min(cap.ammo,state.resources.ammo+cargo.ammo),
       };
       truck={...truck,phase:'to-mine',timer:0};
-      return {...state,resources,logistics:{...logistics,elapsed,workers,worker,truck,cargo:{...ZERO},delivered:delivered+1}};
+      return {...state,resources,logistics:{...logistics,elapsed,workers,truck,cargo:{...ZERO},delivered:delivered+1}};
     }
   }
   return {...state,logistics:{...logistics,elapsed,workers,worker,truck,cargo,delivered}};
