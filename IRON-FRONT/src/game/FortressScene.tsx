@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import { MathUtils, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import type { Group } from 'three';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
@@ -75,8 +75,12 @@ function UnitMesh({unit,onSelect}:{unit:Unit;onSelect:(id:number,enemy:boolean,m
   useFrame((_,delta)=>{
     if(!body.current)return;
     const object=body.current;
-    const alpha=1-Math.exp(-delta*(tank?5.5:8.5));
-    object.position.lerp(new Vector3(unit.x,.15,unit.z),alpha);
+    const dx=unit.x-object.position.x,dz=unit.z-object.position.z;
+    const distance=Math.hypot(dx,dz);
+    // Match the simulation's units-per-second speed, so movement is continuous
+    // between one-second strategic snapshots instead of easing and stopping.
+    const step=Math.min(distance,unit.speed*delta);
+    if(distance>.0001){object.position.x+=dx/distance*step;object.position.z+=dz/distance*step;}
     if(unit.order!=='idle'){
       const dx=unit.targetX-object.position.x,dz=unit.targetZ-object.position.z;
       if(Math.hypot(dx,dz)>.18){
