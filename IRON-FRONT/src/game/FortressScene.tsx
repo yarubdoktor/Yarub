@@ -1,10 +1,11 @@
 import { useMemo, useRef } from 'react';
-import { Canvas, ThreeEvent, useThree } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
+import type { ThreeEvent } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
 import type { Building, BuildingKind, GameState, Unit } from './types';
 
-function Terrain({onMoveOrder}:{onMoveOrder:(x:number,z:number)=>void}) {
+function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;target:Vector3}) {
   const trees=useMemo(()=>Array.from({length:110},(_,i)=>({x:Math.sin(i*17.31)*66,z:Math.cos(i*9.17)*38,s:.65+(i%4)*.16})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5),[]);
   const {camera}=useThree();
   const drag=useRef<{pointerId:number;x:number;y:number}|null>(null);
@@ -13,9 +14,7 @@ function Terrain({onMoveOrder}:{onMoveOrder:(x:number,z:number)=>void}) {
     if(!drag.current||drag.current.pointerId!==e.pointerId)return;
     const dx=e.nativeEvent.clientX-drag.current.x,dy=e.nativeEvent.clientY-drag.current.y;
     if(Math.abs(dx)+Math.abs(dy)>2)dragged.current=true;
-    const target=(camera as any).__ironFrontTarget as Vector3|undefined;
-    if(!target)return;
-    const scale=camera.position.distanceTo(target)*.00062;
+        const scale=camera.position.distanceTo(target)*.00062;
     const right=new Vector3().setFromMatrixColumn(camera.matrixWorld,0);right.y=0;right.normalize();
     const forward=new Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();
     const shift=right.multiplyScalar(-dx*scale).add(forward.multiplyScalar(dy*scale));
@@ -115,10 +114,11 @@ function MineLogistics({state}:{state:GameState}) {
 }
 
 export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSelect:(id:number,enemy:boolean,multi:boolean)=>void;onMoveOrder:(x:number,z:number)=>void}) {
-  return <Canvas shadows camera={{position:[-1,25,31],fov:42}} dpr={[1,1.5]} onCreated={({camera})=>{(camera as any).__ironFrontTarget=new Vector3(-1,0,3);}}> 
+  const cameraTarget=useMemo(()=>new Vector3(-1,0,3),[]);
+  return <Canvas shadows camera={{position:[-1,25,31],fov:42}} dpr={[1,1.5]}> 
     <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',45,145]}/>
     <ambientLight intensity={.68}/><directionalLight position={[-12,24,8]} intensity={2.15} castShadow shadow-mapSize={[2048,2048]}/>
-    <Terrain onMoveOrder={onMoveOrder}/><FortressWalls/><MineLogistics state={state}/>
+    <Terrain onMoveOrder={onMoveOrder} target={cameraTarget}/><FortressWalls/><MineLogistics state={state}/>
     {state.rallyPoint&&<group position={[state.rallyPoint.x,.035,state.rallyPoint.z]}>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.15,1.42,48]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.95}/></mesh>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.18,.28,24]}/><meshBasicMaterial color="#d9f8ff"/></mesh>
@@ -128,6 +128,6 @@ export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSe
     <group position={[54,0,-8]}><mesh position={[0,.6,0]} castShadow><boxGeometry args={[4,1.2,3.6]}/><meshStandardMaterial color="#8e3b32" metalness={.5}/></mesh><mesh position={[0,1.55,0]}><boxGeometry args={[2,.8,2]}/><meshStandardMaterial color="#542a27"/></mesh><mesh position={[0,2.3,0]}><sphereGeometry args={[.13,8,8]}/><meshBasicMaterial color="#ff503d"/></mesh></group>
     {state.units.map(u=><UnitMesh key={u.id} unit={u} onSelect={onSelect}/>)}
     <ContactShadows position={[0,.02,0]} opacity={.4} scale={55} blur={2.5} far={18}/>
-    <Environment preset="sunset"/><OrbitControls makeDefault target={[-1,0,3]} maxPolarAngle={Math.PI/2.08} minDistance={13} maxDistance={88} enableRotate={false} enablePan={false} enableZoom enableDamping dampingFactor={.08}/>
+    <Environment preset="sunset"/><OrbitControls makeDefault target={cameraTarget} maxPolarAngle={Math.PI/2.08} minDistance={13} maxDistance={88} enableRotate={false} enablePan={false} enableZoom enableDamping dampingFactor={.08}/>
   </Canvas>;
 }
