@@ -1,12 +1,9 @@
-import {
-  advanceCombat,
-  advanceEnemyWaves,
-} from '../../game/combatSystem';
-import { advanceConstruction } from '../../game/buildingSystem';
-import { advanceTraining } from '../../game/trainingSystem';
+import { advanceCombat, advanceEnemyWaves } from '../simulation/systems/combatSystem';
+import { advanceConstruction } from '../simulation/systems/buildingSystem';
+import { advanceTraining } from '../simulation/systems/trainingSystem';
 import type { GameEngine } from '../core/GameEngine';
 
-/** Registers the authoritative single-player simulation pipeline. */
+/** Registers the authoritative simulation pipeline. */
 export function registerGameSystems(engine: GameEngine): void {
   engine.registerSystem({
     name: 'construction',
