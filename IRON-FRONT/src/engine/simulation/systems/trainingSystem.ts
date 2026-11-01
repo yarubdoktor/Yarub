@@ -8,8 +8,10 @@ const TRAINING:Record<UnitKind,{steel:number;fuel:number;ammo:number;seconds:num
 export function queueUnit(state:GameState,kind:UnitKind):GameState {
   if(state.outcome!=='playing')return state;
   const required=kind==='tank'?'factory':'barracks';
-  if(!state.buildings.some(b=>b.kind===required&&b.status==='active'))
+  const facility=state.buildings.find(b=>b.kind===required&&b.status==='active');
+  if(!facility)
     return {...state,message:kind==='tank'?'BUILD AN ARMORED FACTORY FIRST':'FIELD BARRACKS REQUIRED'};
+  if(!facility.powered)return {...state,message:'TRAINING FACILITY HAS NO POWER'};
   if(state.trainingQueue.length>=4)return {...state,message:'REINFORCEMENT QUEUE IS FULL'};
   const cost=TRAINING[kind];
   const missing=[
@@ -37,6 +39,9 @@ function createUnit(id:number,kind:UnitKind,rallyPoint:GameState['rallyPoint'],s
 export function advanceTraining(state:GameState):GameState {
   if(!state.trainingQueue.length||state.outcome!=='playing')return state;
   const [current,...rest]=state.trainingQueue;
+  const required=current.kind==='tank'?'factory':'barracks';
+  const facility=state.buildings.find(b=>b.kind===required&&b.status==='active'&&b.powered);
+  if(!facility)return state;
   const remaining=Math.max(0,current.remaining-1);
   if(remaining>0)return {...state,trainingQueue:[{...current,remaining},...rest]};
   const unit=createUnit(state.nextUnitId,current.kind,state.rallyPoint??null,state);
