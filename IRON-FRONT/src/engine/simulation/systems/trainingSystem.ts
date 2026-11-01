@@ -19,7 +19,7 @@ export function queueUnit(state:GameState,kind:UnitKind):GameState {
     trainingQueue:[...state.trainingQueue,order],nextTrainingId:state.nextTrainingId+1,message:(kind==='tank'?'ARMORED VEHICLE':'INFANTRY SQUAD')+' ADDED TO REINFORCEMENT QUEUE'};
 }
 
-function createUnit(id:number,kind:UnitKind):Unit {
+function createUnit(id:number,kind:UnitKind,rallyPoint:GameState['rallyPoint']):Unit {
   const tank=kind==='tank';
   return {id,faction:'player',x:-4.1,z:8.2+(id%3)*1.1,hp:tank?120:80,maxHp:tank?120:80,kind,
     selected:false,order:'idle',targetX:-4.1,targetZ:8.2+(id%3)*1.1,targetId:null,
@@ -31,7 +31,7 @@ export function advanceTraining(state:GameState):GameState {
   const [current,...rest]=state.trainingQueue;
   const remaining=Math.max(0,current.remaining-1);
   if(remaining>0)return {...state,trainingQueue:[{...current,remaining},...rest]};
-  const unit=createUnit(state.nextUnitId,current.kind);
+  const unit=createUnit(state.nextUnitId,current.kind,state.rallyPoint??null);
   return {...state,trainingQueue:rest,units:[...state.units,unit],nextUnitId:state.nextUnitId+1,
     message:(current.kind==='tank'?'ARMORED VEHICLE':'INFANTRY SQUAD')+' REINFORCEMENTS DEPLOYED'};
 }
