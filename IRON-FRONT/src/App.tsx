@@ -34,7 +34,6 @@ function arabicMessage(message:string):string {
     'SIMULATION RESUMED':'تم استئناف المحاكاة.',
     'UNKNOWN BUILDING BLUEPRINT':'مخطط المبنى غير معروف.',
     'INSUFFICIENT RESOURCES FOR CONSTRUCTION':'الموارد غير كافية للبناء.',
-    'BUILD LIMIT REACHED FOR THIS STRUCTURE':'وصلت إلى الحد الأقصى لهذا المبنى.',\n    'NO AVAILABLE CONSTRUCTION PLOT INSIDE THE FORTRESS':'لا توجد مساحة بناء فارغة داخل القاعدة.',
     'NO AVAILABLE CONSTRUCTION PLOT INSIDE THE FORTRESS':'لا توجد مساحة بناء فارغة داخل القاعدة.',
     'BUILD AN ARMORED FACTORY FIRST':'أنشئ مصنع المدرعات وأكمل بناءه قبل تدريب الدبابات.',
     'FIELD BARRACKS REQUIRED':'يجب إنشاء ثكنة للمشاة أولاً.',
