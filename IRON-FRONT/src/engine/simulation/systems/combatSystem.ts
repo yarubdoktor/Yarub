@@ -74,7 +74,7 @@ export function advanceCombat(state:GameState):GameState {
     if(damage.has(u.id)){
       const hp=Math.max(0,u.hp-(damage.get(u.id)||0));
       if(u.faction==='enemy'&&hp>0){
-        const attacker=units.filter(v=>v.faction==='player'&&v.hp>0).sort((a,b)=>distance(u,a)-distance(v,a))[0];
+        const attacker=units.filter(v=>v.faction==='player'&&v.hp>0).sort((a,b)=>distance(u,a)-distance(u,b))[0];
         return attacker?{...u,hp,order:'attack' as const,targetId:attacker.id,targetX:attacker.x,targetZ:attacker.z}:{...u,hp};
       }
       return {...u,hp};
