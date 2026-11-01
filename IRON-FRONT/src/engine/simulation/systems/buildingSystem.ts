@@ -5,7 +5,7 @@ import { canAfford, payCost, produceResources } from '../../../game/economy';
 const SLOTS = [
   {x:-8.2,z:1.2},{x:-5.2,z:1.2},{x:-8.2,z:5.2},{x:-5.2,z:5.2},
   {x:-11,z:-1.2},{x:-2.4,z:1.2},{x:-2.4,z:5.2},{x:-11,z:8.5},
-  {x:-5.2,z:8.5},{x:-8.2,z:-1.2},
+  {x:-5.2,z:8.5},{x:-8.2,z:-1.2},\n  {x:-14,z:-1.2},{x:-14,z:4},{x:-14,z:8.5},{x:-5.2,z:-1.2},\n  {x:-2.4,z:-1.2},{x:-2.4,z:8.5},{x:-11,z:4},{x:-8.2,z:8.5},
 ];
 
 export function queueBuilding(state: GameState, kind: BuildingKind): GameState {
