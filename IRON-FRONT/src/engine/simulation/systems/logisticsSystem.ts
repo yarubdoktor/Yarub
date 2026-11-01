@@ -32,7 +32,7 @@ export function advanceLogistics(state:GameState,deltaSeconds:number):GameState 
     const p=moveToward(truck.x,truck.z,MINE.x,MINE.z,truckSpeed);
     truck.x=p.x;truck.z=p.z;if(p.arrived){truck.phase='loading';truck.timer=0;}
   }else if(truck.phase==='loading'){
-    truck.timer+=deltaSeconds;
+    if(workers.every(w=>w.phase==='working'))truck.timer+=deltaSeconds;
     if(truck.timer>=5){cargo={...LOAD};truck.phase='to-base';}
   }else if(truck.phase==='to-base'){
     const p=moveToward(truck.x,truck.z,BASE.x,BASE.z,truckSpeed);
