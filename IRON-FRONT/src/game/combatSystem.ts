@@ -48,7 +48,9 @@ export function advanceCombat(state:GameState):GameState {
     const target=units.find(v=>v.id===unit.targetId&&v.hp>0);
     if(target&&distance(unit,target)<=unit.range)damage.set(target.id,(damage.get(target.id)||0)+unit.damage);
   });
-  units=units.map(u=>damage.has(u.id)?{...u,hp:Math.max(0,u.hp-(damage.get(u.id)||0)),cooldown:1}:u);
+  const firing=new Set<number>();
+  units.forEach(unit=>{if(unit.order==='attack'&&unit.targetId!==null&&unit.cooldown===0){const target=units.find(v=>v.id===unit.targetId&&v.hp>0);if(target&&distance(unit,target)<=unit.range)firing.add(unit.id);}});
+  units=units.map(u=>damage.has(u.id)?{...u,hp:Math.max(0,u.hp-(damage.get(u.id)||0))}:firing.has(u.id)?{...u,cooldown:1}:u);
   const destroyed=state.units.filter(u=>u.hp>0&&units.some(v=>v.id===u.id&&v.hp<=0));
   const playerLosses=destroyed.filter(u=>u.faction==='player').length;
   const enemyLosses=destroyed.filter(u=>u.faction==='enemy').length;
