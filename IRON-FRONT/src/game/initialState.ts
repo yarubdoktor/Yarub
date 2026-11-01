@@ -1,6 +1,6 @@
 import type { GameState } from './types';
 
-export const initialGameState: GameState = {
+export const initialGameState:GameState = {
   resources:{steel:900,fuel:650,power:260,ammo:360},
   buildings:[
     {id:'HQ-001',kind:'hq',level:1,hp:100,maxHp:100,x:-12,z:4,status:'active',remaining:0,buildSeconds:0},
@@ -13,5 +13,7 @@ export const initialGameState: GameState = {
     {id:101,faction:'enemy',x:12.2,z:1.2,hp:115,maxHp:115,kind:'tank',selected:false,order:'idle',targetX:12.2,targetZ:1.2,targetId:null,range:5.2,damage:18,speed:1.05,cooldown:0},
     {id:102,faction:'enemy',x:14.2,z:5.4,hp:75,maxHp:75,kind:'infantry',selected:false,order:'idle',targetX:14.2,targetZ:5.4,targetId:null,range:3.4,damage:9,speed:1.35,cooldown:0},
   ],
-  enemyHp:100,baseHp:100,tick:0,message:'FORTRESS ONLINE — SELECT UNITS AND ISSUE ORDERS',nextBuildingId:1,nextUnitId:4,
+  trainingQueue:[],enemyHp:100,baseHp:100,tick:0,wave:0,outcome:'playing',
+  message:'FORTRESS ONLINE — BUILD YOUR FORCE AND DESTROY THE HOSTILE HQ',
+  nextBuildingId:1,nextUnitId:4,nextTrainingId:1,
 };
