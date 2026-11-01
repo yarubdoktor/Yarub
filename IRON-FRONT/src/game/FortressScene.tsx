@@ -1,8 +1,10 @@
 import { useMemo, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import { Vector3 } from 'three';
+import { MathUtils, Vector3 } from 'three';
+import type { Group } from 'three';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import type { Building, BuildingKind, GameState, Unit } from './types';
 
 function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;target:Vector3}) {
@@ -18,8 +20,8 @@ function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;tar
     const right=new Vector3().setFromMatrixColumn(camera.matrixWorld,0);right.y=0;right.normalize();
     const forward=new Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();
     const shift=right.multiplyScalar(-dx*scale).add(forward.multiplyScalar(dy*scale));
-    const nx=Math.max(-62,Math.min(62,target.x+shift.x));
-    const nz=Math.max(-38,Math.min(38,target.z+shift.z));
+    const nx=Math.max(-66,Math.min(66,target.x+shift.x));
+    const nz=Math.max(-41,Math.min(41,target.z+shift.z));
     const applied=new Vector3(nx-target.x,0,nz-target.z);
     camera.position.add(applied);target.add(applied);drag.current={pointerId:e.pointerId,x:e.nativeEvent.clientX,y:e.nativeEvent.clientY};
   };
@@ -69,7 +71,24 @@ function Structure({building}:{building:Building}) {
 
 function UnitMesh({unit,onSelect}:{unit:Unit;onSelect:(id:number,enemy:boolean,multi:boolean)=>void}) {
   const tank=unit.kind==='tank',enemy=unit.faction==='enemy';
-  return <group position={[unit.x,.15,unit.z]} onClick={e=>{e.stopPropagation();onSelect(unit.id,enemy,!!(e.nativeEvent as PointerEvent).shiftKey);}}>
+  const body=useRef<Group|null>(null);
+  useFrame((_,delta)=>{
+    if(!body.current)return;
+    const object=body.current;
+    const alpha=1-Math.exp(-delta*(tank?5.5:8.5));
+    object.position.lerp(new Vector3(unit.x,.15,unit.z),alpha);
+    if(unit.order!=='idle'){
+      const dx=unit.targetX-object.position.x,dz=unit.targetZ-object.position.z;
+      if(Math.hypot(dx,dz)>.18){
+        const desired=Math.atan2(dx,dz);
+        let difference=(desired-object.rotation.y+Math.PI)%(Math.PI*2);
+        if(difference<0)difference+=Math.PI*2;
+        difference-=Math.PI;
+        object.rotation.y+=difference*(1-Math.exp(-delta*(tank?2.4:7.5)));
+      }
+    }
+  });
+  return <group ref={body} position={[unit.x,.15,unit.z]} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();onSelect(unit.id,enemy,!!(e.nativeEvent as PointerEvent).shiftKey);}}>
     <mesh position={[0,.32,0]} castShadow><boxGeometry args={tank?[1.35,.48,1.9]:[.48,.8,.48]}/><meshStandardMaterial color={enemy?(tank?'#9b5148':'#d08067'):(tank?'#718174':'#c2b68a')} metalness={tank?.45:.1} emissive={unit.selected?'#1c8cbb':'#000000'} emissiveIntensity={unit.selected?.8:0}/></mesh>
     {tank&&<><mesh position={[0,.68,-.12]} castShadow><cylinderGeometry args={[.38,.42,.35,10]}/><meshStandardMaterial color={enemy?'#713d38':'#58675d'}/></mesh><mesh position={[0,.72,-.75]} rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.09,.09,1.1,8]}/><meshStandardMaterial color="#303b38"/></mesh></>}
     <mesh position={[0,1.02,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.5,.57,24]}/><meshBasicMaterial color={enemy?'#e46c5d':unit.selected?'#52d9ff':'#7ea18b'}/></mesh>
