@@ -1,5 +1,6 @@
 import { advanceCombat, advanceEnemyWaves } from '../simulation/systems/combatSystem';
 import { advanceConstruction } from '../simulation/systems/buildingSystem';
+import { advanceEconomy } from '../simulation/systems/economySystem';
 import { advanceTraining } from '../simulation/systems/trainingSystem';
 import type { GameEngine } from '../core/GameEngine';
 
@@ -9,6 +10,11 @@ export function registerGameSystems(engine: GameEngine): void {
     name: 'construction',
     priority: 10,
     update: state => advanceConstruction(state),
+  });
+  engine.registerSystem({
+    name: 'economy',
+    priority: 15,
+    update: state => advanceEconomy(state),
   });
   engine.registerSystem({
     name: 'training',
