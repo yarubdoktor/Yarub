@@ -1,5 +1,6 @@
 import type { Building, BuildingKind, GameState, Resources } from '../model';
 import { BUILDINGS } from '../../../game/catalog';
+import { INITIAL_LOGISTICS } from './logisticsSystem';
 
 const POWER_DEMAND:Partial<Record<BuildingKind,number>> = {
   barracks:1, refinery:1, factory:2, research:2, watchtower:1, hospital:1, ammo:1,
@@ -72,7 +73,7 @@ export function normalizeEconomyState(state:GameState):GameState {
   const legacy=state as GameState & {resourceCapacity?:Resources;powerGrid?:GameState['powerGrid']};
   const buildings=legacy.buildings.map(building=>({...building,
     powered:typeof building.powered==='boolean'?building.powered:building.status==='active'}));
-  const normalized={...legacy,buildings,
+  const normalized={...legacy,logistics:legacy.logistics??INITIAL_LOGISTICS,buildings,
     resourceCapacity:legacy.resourceCapacity??{...BASE_CAPACITY},
     powerGrid:legacy.powerGrid??{generation:2,demand:0,supplied:0}};
   return advanceEconomy(normalized);
