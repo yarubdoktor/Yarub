@@ -1,0 +1,31 @@
+name: IRON FRONT Build
+on:
+  push:
+    paths:
+      - 'IRON-FRONT/**'
+      - '.github/workflows/iron-front-build.yml'
+  pull_request:
+    paths:
+      - 'IRON-FRONT/**'
+      - '.github/workflows/iron-front-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: IRON-FRONT
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: IRON-FRONT/package.json
+      - name: Install dependencies
+        run: npm install
+      - name: Type-check and production build
+        run: npm run build
