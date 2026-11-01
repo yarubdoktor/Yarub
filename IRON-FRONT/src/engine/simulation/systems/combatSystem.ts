@@ -11,9 +11,26 @@ const moveToward=(unit:Unit,x:number,z:number):Unit=>{
 };
 
 export function issueMove(state:GameState,x:number,z:number):GameState {
-  const units=state.units.map(u=>u.faction==='player'&&u.selected?{...u,order:'move' as const,targetX:x,targetZ:z,targetId:null}:u);
-  const count=units.filter(u=>u.faction==='player'&&u.selected).length;
-  return count?{...state,units,message:count+' UNIT(S) MOVING TO DESIGNATED POSITION'}:{...state,message:'SELECT FRIENDLY UNITS FIRST'};
+  const selected=state.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0);
+  if(!selected.length)return {...state,message:'SELECT FRIENDLY UNITS FIRST'};
+  // Give each unit a distinct slot so a group advances in formation instead of
+  // converging on one coordinate and stacking on top of itself.
+  const columns=Math.ceil(Math.sqrt(selected.length));
+  const spacing=selected.some(u=>u.kind==='tank')?2.6:1.55;
+  const slots=new Map<number,{x:number;z:number}>();
+  selected.forEach((unit,index)=>{
+    const row=Math.floor(index/columns);
+    const column=index%columns;
+    slots.set(unit.id,{
+      x:x+(column-(Math.min(columns,selected.length)-1)/2)*spacing,
+      z:z+(row-(Math.ceil(selected.length/columns)-1)/2)*spacing,
+    });
+  });
+  const units=state.units.map(unit=>{
+    const slot=slots.get(unit.id);
+    return slot?{...unit,order:'move' as const,targetX:slot.x,targetZ:slot.z,targetId:null}:unit;
+  });
+  return {...state,units,message:selected.length+' UNIT(S) MOVING IN FORMATION'};
 }
 export function issueAttack(state:GameState,targetId:number):GameState {
   const target=state.units.find(u=>u.id===targetId&&u.faction==='enemy'&&u.hp>0);
