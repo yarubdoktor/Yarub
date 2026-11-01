@@ -1,4 +1,4 @@
-import type { GameState } from '../../game/types';
+import type { GameState } from '../simulation/model';
 import { EventBus, type EngineEventMap } from './EventBus';
 
 export type GameSystem = {
