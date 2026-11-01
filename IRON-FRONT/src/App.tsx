@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FortressScene } from './game/FortressScene';
 import { BUILDINGS } from './game/catalog';
 import { advanceConstruction, queueBuilding } from './game/buildingSystem';
-import { advanceCombat, advanceEnemyWaves, holdSelected, issueAttack, issueAttackBase, issueMove } from './game/combatSystem';
-import { advanceTraining, queueUnit } from './game/trainingSystem';
+import { holdSelected, issueAttack, issueAttackBase, issueMove } from './game/combatSystem';
+import { queueUnit } from './game/trainingSystem';
 import { initialGameState } from './game/initialState';
 import type { BuildingKind, GameState, UnitKind } from './game/types';
+import { createGameEngine } from './engine/createGameEngine';
+import { GameLoop } from './engine/core/GameLoop';
 
 export default function App() {
   const [game,setGame]=useState<GameState>(initialGameState);
+  const engineRef=useRef<ReturnType<typeof createGameEngine> | null>(null);
+  const loopRef=useRef<GameLoop | null>(null);
+  if(!engineRef.current)engineRef.current=createGameEngine();
   const [tab,setTab]=useState<'command'|'build'|'army'>('command');
   const [running,setRunning]=useState(true);
   const [moveMode,setMoveMode]=useState(false);
@@ -16,12 +21,13 @@ export default function App() {
 
   useEffect(()=>{
     if(!running)return;
-    const timer=window.setInterval(()=>setGame(g=>{
-      if(g.outcome!=='playing')return g;
-      const ticked={...g,tick:g.tick+1};
-      return advanceEnemyWaves(advanceCombat(advanceTraining(advanceConstruction(ticked))));
-    }),1000);
-    return ()=>window.clearInterval(timer);
+    const loop=new GameLoop(deltaSeconds=>setGame(current=>engineRef.current!.step(current,deltaSeconds)));
+    loopRef.current=loop;
+    loop.start();
+    return ()=>{
+      loop.stop();
+      if(loopRef.current===loop)loopRef.current=null;
+    };
   },[running]);
 
   useEffect(()=>{if(game.outcome!=='playing')setRunning(false);},[game.outcome]);
