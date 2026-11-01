@@ -7,6 +7,67 @@ import { createGameEngine } from './engine/createGameEngine';
 import { GameLoop } from './engine/core/GameLoop';
 import { SimulationRuntime } from './engine/simulation/SimulationRuntime';
 
+const buildingNames: Record<BuildingKind,string> = {
+  hq:'مقر القيادة', barracks:'ثكنة المشاة', power:'محطة الطاقة', refinery:'مصفاة الوقود',
+  factory:'مصنع المدرعات', research:'مركز الأبحاث', watchtower:'برج المراقبة',
+  hospital:'المستشفى الميداني', ammo:'مستودع الذخيرة',
+};
+const buildingDescriptions: Record<BuildingKind,string> = {
+  power:'ينتج الطاقة الكهربائية اللازمة للقاعدة.',
+  refinery:'يعالج الوقود ويزيد احتياطي الوقود.',
+  factory:'يفتح إمكانية إنتاج الدبابات والمركبات الثقيلة.',
+  research:'مركز تطوير التقنيات العسكرية.',
+  watchtower:'نقطة مراقبة محصنة تساعد في الدفاع.',
+  hospital:'يوفر القدرة على معالجة الوحدات المتضررة.',
+  ammo:'ينتج الذخيرة اللازمة للعمليات القتالية.',
+  hq:'المقر الرئيسي للقيادة والسيطرة.',
+  barracks:'تدريب وتجهيز قوات المشاة.',
+};
+function arabicMessage(message:string):string {
+  const exact:Record<string,string> = {
+    'FORTRESS ONLINE — BUILD YOUR FORCE AND DESTROY THE HOSTILE HQ':'القاعدة جاهزة — جهّز قواتك ودمّر مقر العدو.',
+    'FORTRESS, REINFORCEMENTS AND MISSION STATE SAVED':'تم حفظ القاعدة والتعزيزات وحالة المهمة.',
+    'SAVE FAILED — STORAGE UNAVAILABLE':'تعذر الحفظ — مساحة التخزين غير متاحة.',
+    'NO SAVED MISSION FOUND':'لا توجد مهمة محفوظة.',
+    'SAVE DATA COULD NOT BE LOADED':'تعذر تحميل بيانات الحفظ.',
+    'SIMULATION PAUSED':'تم إيقاف المحاكاة مؤقتاً.',
+    'SIMULATION RESUMED':'تم استئناف المحاكاة.',
+    'UNKNOWN BUILDING BLUEPRINT':'مخطط المبنى غير معروف.',
+    'INSUFFICIENT RESOURCES FOR CONSTRUCTION':'الموارد غير كافية للبناء.',
+    'BUILD LIMIT REACHED FOR THIS STRUCTURE':'وصلت إلى الحد الأقصى لهذا المبنى.',
+    'NO AVAILABLE CONSTRUCTION PLOT INSIDE THE FORTRESS':'لا توجد مساحة بناء فارغة داخل القاعدة.',
+    'BUILD AN ARMORED FACTORY FIRST':'أنشئ مصنع المدرعات أولاً.',
+    'FIELD BARRACKS REQUIRED':'يجب إنشاء ثكنة للمشاة أولاً.',
+    'REINFORCEMENT QUEUE IS FULL':'قائمة تدريب التعزيزات ممتلئة.',
+    'INSUFFICIENT STEEL, FUEL OR AMMUNITION':'لا يكفي الفولاذ أو الوقود أو الذخيرة.',
+    'SELECT FRIENDLY UNITS FIRST':'حدد وحداتك أولاً.',
+    'ALL SELECTED UNITS ADVANCING ON HOSTILE HEADQUARTERS':'كل الوحدات المحددة تتقدم نحو مقر العدو.',
+    'SELECTED UNITS HOLD POSITION':'الوحدات المحددة تثبت مواقعها.',
+    'MISSION COMPLETE — HOSTILE HQ DESTROYED':'اكتملت المهمة — تم تدمير مقر العدو.',
+    'MISSION FAILED — YOUR HEADQUARTERS HAS FALLEN':'فشلت المهمة — تم تدمير مقر قيادتك.',
+    'HOSTILE HQ UNDER FIRE':'مقر العدو يتعرض للهجوم.',
+    'YOUR HEADQUARTERS IS UNDER ATTACK':'مقر قيادتك يتعرض للهجوم!',
+  };
+  if(exact[message])return exact[message];
+  let m=message.match(/^(\d+) UNIT\(S\) MOVING TO DESIGNATED POSITION$/);
+  if(m)return 'الوحدات تتحرك إلى الموقع المحدد: '+m[1];
+  m=message.match(/^ATTACK ORDER CONFIRMED — HOSTILE (\d+)$/);
+  if(m)return 'تم تأكيد أمر الهجوم على وحدة العدو رقم '+m[1]+'.';
+  m=message.match(/^HOSTILE REINFORCEMENT WAVE (\d+) DETECTED — ENEMY CAP REACHED$/);
+  if(m)return 'تم رصد موجة تعزيزات العدو رقم '+m[1]+' — وصلت قوات العدو إلى الحد الأقصى.';
+  m=message.match(/^HOSTILE REINFORCEMENT WAVE (\d+) INBOUND$/);
+  if(m)return 'موجة تعزيزات العدو رقم '+m[1]+' في الطريق!';
+  if(message==='HOSTILE UNIT DESTROYED')return 'تم تدمير وحدة معادية.';
+  if(message==='FRIENDLY UNIT LOST')return 'خسرت إحدى وحداتك.';
+  if(message.endsWith(' CONSTRUCTION STARTED'))return 'بدأ بناء: '+message.replace(' CONSTRUCTION STARTED','')+'.';
+  if(message.endsWith(' CONSTRUCTION COMPLETE'))return 'اكتمل بناء: '+message.replace(' CONSTRUCTION COMPLETE','')+'.';
+  if(message.includes('ARMORED VEHICLE')&&message.includes('REINFORCEMENT QUEUE'))return 'تمت إضافة دبابة إلى قائمة التعزيزات.';
+  if(message.includes('INFANTRY SQUAD')&&message.includes('REINFORCEMENT QUEUE'))return 'تمت إضافة فرقة مشاة إلى قائمة التعزيزات.';
+  if(message.includes('ARMORED VEHICLE')&&message.includes('DEPLOYED'))return 'وصلت تعزيزات الدبابات إلى ساحة المعركة.';
+  if(message.includes('INFANTRY SQUAD')&&message.includes('DEPLOYED'))return 'وصلت تعزيزات المشاة إلى ساحة المعركة.';
+  return message;
+}
+
 export default function App() {
   const [game,setGame]=useState<GameState>(initialGameState);
   const simulationRef=useRef<SimulationRuntime | null>(null);
@@ -19,18 +80,13 @@ export default function App() {
   const [addMode,setAddMode]=useState(false);
 
   useEffect(()=>simulation.subscribe(snapshot=>setGame(snapshot as GameState)),[simulation]);
-
   useEffect(()=>{
     if(!running)return;
     const loop=new GameLoop(deltaSeconds=>simulation.step(deltaSeconds));
     loopRef.current=loop;
     loop.start();
-    return ()=>{
-      loop.stop();
-      if(loopRef.current===loop)loopRef.current=null;
-    };
+    return ()=>{loop.stop();if(loopRef.current===loop)loopRef.current=null;};
   },[running,simulation]);
-
   useEffect(()=>{if(game.outcome!=='playing')setRunning(false);},[game.outcome]);
 
   const build=(kind:BuildingKind)=>simulation.dispatch({type:'buildings/queue',buildingKind:kind});
@@ -53,33 +109,33 @@ export default function App() {
   const enemyUnits=game.units.filter(u=>u.faction==='enemy'&&u.hp>0);
   const firstTraining=game.trainingQueue[0];
 
-  return <main className="app-shell">
+  return <main className="app-shell" dir="rtl" lang="ar">
     <header className="topbar">
-      <div className="brand"><div className="brand-mark">IF</div><div><strong>IRON FRONT</strong><span>TOTAL DOMINATION <i>•</i> FORTRESS COMMAND</span></div></div>
+      <div className="brand"><div className="brand-mark">IF</div><div><strong>IRON FRONT</strong><span>القيادة العسكرية <i>•</i> عمليات القاعدة</span></div></div>
       <div className="resources">
-        <div><small>STEEL</small><b>⬡ {game.resources.steel}</b></div><div><small>FUEL</small><b>◈ {game.resources.fuel}</b></div><div><small>POWER</small><b>ϟ {game.resources.power}</b></div><div><small>AMMO</small><b>▰ {game.resources.ammo}</b></div>
-      </div><button className="save-btn" onClick={save}>SAVE</button>
+        <div><small>الفولاذ</small><b>⬡ {game.resources.steel}</b></div><div><small>الوقود</small><b>◈ {game.resources.fuel}</b></div><div><small>الطاقة</small><b>ϟ {game.resources.power}</b></div><div><small>الذخيرة</small><b>▰ {game.resources.ammo}</b></div>
+      </div><button className="save-btn" onClick={save}>حفظ</button>
     </header>
     <section className="battle-area">
-      <div className="map-label"><span className="live-dot"/> OPERATION IRON VEIL <small>FORTIFIED SECTOR 07 / WAVE {game.wave} / TACTICAL COMMAND</small></div>
+      <div className="map-label"><span className="live-dot"/> عملية الستار الحديدي <small>القطاع المحصّن 07 / الموجة {game.wave} / القيادة التكتيكية</small></div>
       <div className="map-stage"><FortressScene state={game} onSelect={(id,enemy,multi)=>selectUnit(id,enemy,multi||addMode)} onMoveOrder={moveUnits}/></div><div className="map-vignette"/>
-      <div className="status-stack"><div><small>YOUR FORTRESS</small><b>{game.baseHp}% <span className="health"><i style={{width:game.baseHp+'%'}}/></span></b></div><div className="enemy"><small>HOSTILE HQ</small><b>{game.enemyHp}% <span className="health"><i style={{width:game.enemyHp+'%'}}/></span></b></div></div>
-      <div className="map-coords">FRIENDLY {playerUnits.length} <span>•</span> HOSTILE {enemyUnits.length} <span>•</span> WAVE {game.wave}</div>
-      <div className="unit-hint">{moveMode?'MOVE ORDER ACTIVE • TAP DESTINATION':selectedCount?selectedCount+' UNIT(S) SELECTED':'TAP FRIENDLY TO SELECT • TAP ENEMY TO ENGAGE'}</div>
-      {game.outcome!=='playing'&&<div className="mission-overlay"><div className="mission-card"><small>OPERATION IRON VEIL</small><h2>{game.outcome==='victory'?'VICTORY':'DEFEAT'}</h2><p>{game.outcome==='victory'?'Hostile headquarters destroyed. Sector secured.':'Your headquarters has been destroyed. The sector is lost.'}</p><button onClick={restart}>RESTART MISSION</button></div></div>}
+      <div className="status-stack"><div><small>قاعدة قواتك</small><b>{game.baseHp}% <span className="health"><i style={{width:game.baseHp+'%'}}/></span></b></div><div className="enemy"><small>مقر العدو</small><b>{game.enemyHp}% <span className="health"><i style={{width:game.enemyHp+'%'}}/></span></b></div></div>
+      <div className="map-coords">قواتك {playerUnits.length} <span>•</span> العدو {enemyUnits.length} <span>•</span> الموجة {game.wave}</div>
+      <div className="unit-hint">{moveMode?'أمر الحركة نشط • اضغط على وجهة التحرك':selectedCount?'الوحدات المحددة: '+selectedCount:'اضغط على جندي أو دبابة من قواتك لتحديدها • اضغط على العدو لمهاجمته'}</div>
+      {game.outcome!=='playing'&&<div className="mission-overlay"><div className="mission-card"><small>عملية الستار الحديدي</small><h2>{game.outcome==='victory'?'انتصار':'هزيمة'}</h2><p>{game.outcome==='victory'?'تم تدمير مقر العدو وتأمين القطاع.':'تم تدمير مقر قيادتك وخسرت القطاع.'}</p><button onClick={restart}>إعادة المهمة</button></div></div>}
     </section>
     <section className="command-panel">
-      <div className="panel-head"><div><small>TACTICAL COMMAND</small><h1>FORTRESS OPERATIONS</h1></div><div className="online"><span/> {running?'SIMULATION ACTIVE':'SIMULATION PAUSED'}</div></div>
-      <div className="tabs"><button className={tab==='command'?'active':''} onClick={()=>setTab('command')}>COMMAND</button><button className={tab==='build'?'active':''} onClick={()=>setTab('build')}>CONSTRUCTION</button><button className={tab==='army'?'active':''} onClick={()=>setTab('army')}>GARRISON & TRAINING</button></div>
-      {tab==='command'&&<div className="command-content"><div className="briefing"><span className="brief-icon">⌖</span><div><b>TACTICAL ORDERS</b><p>{moveMode?'Select a destination on the battlefield. Selected units will move there.':'Select friendly units, move them, engage enemy forces, then order an assault on the hostile HQ.'}</p></div></div><div className="action-row"><button className={moveMode?'primary-action':''} disabled={!selectedCount||game.outcome!=='playing'} onClick={()=>setMoveMode(v=>!v)}>{moveMode?'✕ CANCEL MOVE':'➤ MOVE'}</button><button className={addMode?'primary-action':''} onClick={()=>setAddMode(v=>!v)}>{addMode?'✓ ADD MODE':'＋ ADD UNITS'}</button><button disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/hold',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>Ⅱ HOLD</button><button className="assault-action" disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/attack-base',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>⚑ ATTACK HQ</button><button onClick={()=>{setRunning(!running);simulation.restore({...simulation.getSnapshot(),message:running?'SIMULATION PAUSED':'SIMULATION RESUMED'});}}>{running?'Ⅱ PAUSE':'▶ RESUME'}</button><button onClick={load}>↧ LOAD</button></div></div>}
-      {tab==='build'&&<div className="construction-wrap"><div className="construction-grid">{BUILDINGS.map(spec=>{const active=game.buildings.some(b=>b.kind===spec.kind&&b.status==='active');const inProgress=game.buildings.find(b=>b.kind===spec.kind&&b.status==='constructing');const limitReached=count(spec.kind)>=(spec.kind==='watchtower'?4:1);return <article className="construction-card" key={spec.kind}><div className="building-symbol">{spec.short}</div><div className="building-copy"><b>{spec.name}</b><small>{spec.description}</small><em>{spec.cost.steel} STEEL · {spec.cost.fuel} FUEL · {spec.cost.power} POWER · {spec.seconds} SEC</em>{inProgress&&<div className="progress"><i style={{width:(100*(1-inProgress.remaining/inProgress.buildSeconds))+'%'}}/></div>}{active&&<span className="built-label">OPERATIONAL · LEVEL 1</span>}</div><button disabled={active||!!inProgress||limitReached||game.outcome!=='playing'} onClick={()=>build(spec.kind)}>{active?'BUILT':inProgress?'BUILDING':limitReached?'LIMIT':'BUILD'}</button></article>;})}</div></div>}
+      <div className="panel-head"><div><small>مركز القيادة التكتيكية</small><h1>إدارة عمليات القاعدة</h1></div><div className="online"><span/> {running?'المحاكاة تعمل':'المحاكاة متوقفة مؤقتاً'}</div></div>
+      <div className="tabs"><button className={tab==='command'?'active':''} onClick={()=>setTab('command')}>الأوامر</button><button className={tab==='build'?'active':''} onClick={()=>setTab('build')}>البناء</button><button className={tab==='army'?'active':''} onClick={()=>setTab('army')}>الجيش والتدريب</button></div>
+      {tab==='command'&&<div className="command-content"><div className="briefing"><span className="brief-icon">⌖</span><div><b>التوجيهات العسكرية</b><p>{moveMode?'اختر نقطة على أرض المعركة لتحريك الوحدات المحددة إليها.':'حدد جنودك أو دباباتك، ثم حرّكهم أو هاجم قوات العدو. يمكنك إصدار أمر بمهاجمة مقر العدو.'}</p></div></div><div className="action-row"><button className={moveMode?'primary-action':''} disabled={!selectedCount||game.outcome!=='playing'} onClick={()=>setMoveMode(v=>!v)}>{moveMode?'✕ إلغاء الحركة':'➤ تحريك'}</button><button className={addMode?'primary-action':''} onClick={()=>setAddMode(v=>!v)}>{addMode?'✓ وضع الإضافة مفعّل':'＋ تحديد عدة وحدات'}</button><button disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/hold',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>Ⅱ تثبيت</button><button className="assault-action" disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/attack-base',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>⚑ هجوم على المقر</button><button onClick={()=>{setRunning(!running);simulation.restore({...simulation.getSnapshot(),message:running?'SIMULATION PAUSED':'SIMULATION RESUMED'});}}>{running?'Ⅱ إيقاف مؤقت':'▶ متابعة'}</button><button onClick={load}>↧ تحميل</button></div></div>}
+      {tab==='build'&&<div className="construction-wrap"><div className="construction-grid">{BUILDINGS.map(spec=>{const active=game.buildings.some(b=>b.kind===spec.kind&&b.status==='active');const inProgress=game.buildings.find(b=>b.kind===spec.kind&&b.status==='constructing');const limitReached=count(spec.kind)>=(spec.kind==='watchtower'?4:1);return <article className="construction-card" key={spec.kind}><div className="building-symbol">{spec.short}</div><div className="building-copy"><b>{buildingNames[spec.kind]}</b><small>{buildingDescriptions[spec.kind]}</small><em>{spec.cost.steel} فولاذ · {spec.cost.fuel} وقود · {spec.cost.power} طاقة · {spec.seconds} ثانية</em>{inProgress&&<div className="progress"><i style={{width:(100*(1-inProgress.remaining/inProgress.buildSeconds))+'%'}}/></div>}{active&&<span className="built-label">يعمل · المستوى 1</span>}</div><button disabled={active||!!inProgress||limitReached||game.outcome!=='playing'} onClick={()=>build(spec.kind)}>{active?'مبني':inProgress?'قيد البناء':limitReached?'الحد الأقصى':'بناء'}</button></article>;})}</div></div>}
       {tab==='army'&&<div className="army-panel">
-        <div className="recruit-card"><div className="recruit-symbol tank-symbol">T</div><div><b>MAIN BATTLE TANK</b><small>120 HP · HEAVY ARMOR · 27 DAMAGE</small><em>260 STEEL · 90 FUEL · 24 AMMO · 18 SEC</em></div><button disabled={!game.buildings.some(b=>b.kind==='factory'&&b.status==='active')||game.trainingQueue.length>=4||game.outcome!=='playing'} onClick={()=>train('tank')}>TRAIN</button></div>
-        <div className="recruit-card"><div className="recruit-symbol infantry-symbol">I</div><div><b>ASSAULT INFANTRY</b><small>80 HP · FAST DEPLOYMENT · 12 DAMAGE</small><em>90 STEEL · 15 FUEL · 8 AMMO · 8 SEC</em></div><button disabled={!game.buildings.some(b=>b.kind==='barracks'&&b.status==='active')||game.trainingQueue.length>=4||game.outcome!=='playing'} onClick={()=>train('infantry')}>TRAIN</button></div>
-        <div className="queue-panel"><div className="queue-head"><b>REINFORCEMENT QUEUE</b><small>{game.trainingQueue.length}/4 SLOTS</small></div>{firstTraining?<><div className="queue-current"><span>{firstTraining.kind==='tank'?'TANK':'INFANTRY'}</span><b>{firstTraining.remaining}s</b></div><div className="progress"><i style={{width:(100*(1-firstTraining.remaining/firstTraining.seconds))+'%'}}/></div>{game.trainingQueue.slice(1).map(order=><small className="queue-next" key={order.id}>+ {order.kind.toUpperCase()} · {order.seconds}s</small>)}</>:<p>NO REINFORCEMENTS IN PRODUCTION</p>}</div>
-        <div className="garrison-stats"><div className="garrison-stat"><b>{playerUnits.length}</b><small>FRIENDLY UNITS</small></div><div className="garrison-stat"><b>{playerUnits.filter(u=>u.kind==='tank').length}</b><small>ARMORED</small></div><div className="garrison-stat"><b>{playerUnits.filter(u=>u.kind==='infantry').length}</b><small>INFANTRY</small></div><div className="garrison-stat hostile-stat"><b>{enemyUnits.length}</b><small>HOSTILE</small></div><div className="garrison-stat"><b>{game.wave}/5</b><small>WAVES</small></div></div>
+        <div className="recruit-card"><div className="recruit-symbol tank-symbol">د</div><div><b>دبابة قتال رئيسية</b><small>120 صحة · درع ثقيل · 27 ضرر</small><em>260 فولاذ · 90 وقود · 24 ذخيرة · 18 ثانية</em></div><button disabled={!game.buildings.some(b=>b.kind==='factory'&&b.status==='active')||game.trainingQueue.length>=4||game.outcome!=='playing'} onClick={()=>train('tank')}>تدريب</button></div>
+        <div className="recruit-card"><div className="recruit-symbol infantry-symbol">م</div><div><b>جنود مشاة هجومية</b><small>80 صحة · انتشار سريع · 12 ضرر</small><em>90 فولاذ · 15 وقود · 8 ذخيرة · 8 ثوانٍ</em></div><button disabled={!game.buildings.some(b=>b.kind==='barracks'&&b.status==='active')||game.trainingQueue.length>=4||game.outcome!=='playing'} onClick={()=>train('infantry')}>تدريب</button></div>
+        <div className="queue-panel"><div className="queue-head"><b>قائمة التعزيزات</b><small>{game.trainingQueue.length}/4 خانات</small></div>{firstTraining?<><div className="queue-current"><span>{firstTraining.kind==='tank'?'دبابة':'مشاة'}</span><b>{firstTraining.remaining} ث</b></div><div className="progress"><i style={{width:(100*(1-firstTraining.remaining/firstTraining.seconds))+'%'}}/></div>{game.trainingQueue.slice(1).map(order=><small className="queue-next" key={order.id}>+ {order.kind==='tank'?'دبابة':'مشاة'} · {order.seconds} ثانية</small>)}</>:<p>لا توجد وحدات قيد التدريب حالياً.</p>}</div>
+        <div className="garrison-stats"><div className="garrison-stat"><b>{playerUnits.length}</b><small>قواتك</small></div><div className="garrison-stat"><b>{playerUnits.filter(u=>u.kind==='tank').length}</b><small>دبابات</small></div><div className="garrison-stat"><b>{playerUnits.filter(u=>u.kind==='infantry').length}</b><small>مشاة</small></div><div className="garrison-stat hostile-stat"><b>{enemyUnits.length}</b><small>قوات العدو</small></div><div className="garrison-stat"><b>{game.wave}/5</b><small>الموجات</small></div></div>
       </div>}
-      <div className="footer-line"><span className="log-dot"/> {game.message}<span className="tick">T+ {String(Math.floor(game.tick/60)).padStart(2,'0')}:{String(game.tick%60).padStart(2,'0')}</span></div>
+      <div className="footer-line"><span className="log-dot"/> {arabicMessage(game.message)}<span className="tick">الوقت {String(Math.floor(game.tick/60)).padStart(2,'0')}:{String(game.tick%60).padStart(2,'0')}</span></div>
     </section>
   </main>;
 }
