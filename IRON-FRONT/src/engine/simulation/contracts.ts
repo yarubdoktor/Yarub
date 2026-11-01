@@ -22,6 +22,7 @@ export interface SimulationPort {
   getSnapshot(): SimulationSnapshot;
   dispatch(command: GameCommand): void;
   subscribe(listener: (snapshot: SimulationSnapshot) => void): () => void;
+  restore(snapshot: GameState): void;
 }
 
 /** A pure simulation step transforms one state snapshot into the next. */
