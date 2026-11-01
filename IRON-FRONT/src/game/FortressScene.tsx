@@ -5,7 +5,7 @@ import type { Group } from 'three';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
 import type { Building, BuildingKind, GameState, Unit } from './types';
 
-function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;target:Vector3}) {
+function Terrain({onMoveOrder}:{onMoveOrder:(x:number,z:number)=>void}) {
   const trees=useMemo(()=>Array.from({length:110},(_,i)=>({x:Math.sin(i*17.31)*66,z:Math.cos(i*9.17)*38,s:.65+(i%4)*.16})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5),[]);
   return <group>
     <mesh rotation={[-Math.PI/2,0,0]} receiveShadow
@@ -167,7 +167,7 @@ export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSe
   return <Canvas shadows camera={{position:[-1,25,31],fov:42}} dpr={[1,1.5]}> 
     <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',45,145]}/>
     <ambientLight intensity={.68}/><directionalLight position={[-12,24,8]} intensity={2.15} castShadow shadow-mapSize={[2048,2048]}/>
-    <CameraPanControls target={cameraTarget}/><Terrain onMoveOrder={onMoveOrder} target={cameraTarget}/><FortressWalls/><MineLogistics state={state}/>
+    <CameraPanControls target={cameraTarget}/><Terrain onMoveOrder={onMoveOrder}/><FortressWalls/><MineLogistics state={state}/>
     {state.rallyPoint&&<group position={[state.rallyPoint.x,.035,state.rallyPoint.z]}>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.15,1.42,48]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.95}/></mesh>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.18,.28,24]}/><meshBasicMaterial color="#d9f8ff"/></mesh>
