@@ -1,24 +1,20 @@
-# IRON FRONT: TOTAL DOMINATION
+# IRON FRONT: TOTAL DOMINATION — Stage 2
 
-A mobile-first real-time strategy prototype built with React, TypeScript, Three.js and React Three Fiber.
+Mobile-first real-time strategy prototype using React, TypeScript, Three.js and React Three Fiber.
 
-## Run locally
-- Install Node.js 20+
-- Run `npm install`
-- Run `npm run dev`
+## Run
+`npm install` then `npm run dev`.
 
 ## Build
-- Run `npm run build`
+`npm run build`.
 
-## Current playable slice
-- 3D battlefield with orbit, drag and pinch camera controls.
-- Player and hostile command structures.
-- Selectable friendly armor and infantry.
-- Resource generation over time.
-- Recruit tanks and rifle squads with resource costs.
-- Barracks upgrade with resource costs.
-- Advancing units and hostile counter-fire simulation.
-- Enemy command post damage and sector-capture state.
-- Local save/load.
+## Stage 2 — Fortified base and economy
+- Angled 3D command camera with orbit, zoom and touch gestures.
+- Fortified perimeter walls, gate and four watch positions.
+- 3D structures for HQ, barracks, power, refinery, factory, research, watchtower, hospital and ammunition depot.
+- Construction costs, build timers, construction progress and completion states.
+- Resource income from operational power, refinery and ammunition structures.
+- Construction plot occupancy and per-structure build limits.
+- Local save/load for the fortress and economy state.
 
-This is the first playable foundation, not a claim of a finished AAA production game. Future stages will replace prototype combat timing with dedicated combat, navigation, AI and economy systems.
+The battlefield combat and opponent behavior remain prototype systems and are scheduled for later stages. This is not a finished AAA production release.
