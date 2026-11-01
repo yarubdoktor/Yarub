@@ -43,6 +43,8 @@ function arabicMessage(message:string):string {
     'SELECT FRIENDLY UNITS FIRST':'حدد وحداتك أولاً.',
     'ALL SELECTED UNITS ADVANCING ON HOSTILE HEADQUARTERS':'كل الوحدات المحددة تتقدم نحو مقر العدو.',
     'SELECTED UNITS HOLD POSITION':'الوحدات المحددة تثبت مواقعها.',
+    'RALLY POINT DESIGNATED':'تم تحديد نقطة تجمع القوات. ستتجه إليها التعزيزات الجديدة.',
+    'RALLY POINT CLEARED':'تم إلغاء نقطة تجمع القوات.',
     'MISSION COMPLETE — HOSTILE HQ DESTROYED':'اكتملت المهمة — تم تدمير مقر العدو.',
     'MISSION FAILED — YOUR HEADQUARTERS HAS FALLEN':'فشلت المهمة — تم تدمير مقر قيادتك.',
     'HOSTILE HQ UNDER FIRE':'مقر العدو يتعرض للهجوم.',
@@ -76,7 +78,8 @@ export default function App() {
   const simulation=simulationRef.current;
   const [tab,setTab]=useState<'command'|'build'|'army'>('command');
   const [running,setRunning]=useState(true);
-  const [moveMode,setMoveMode]=useState(false);\n  const [rallyMode,setRallyMode]=useState(false);
+  const [moveMode,setMoveMode]=useState(false);
+  const [rallyMode,setRallyMode]=useState(false);
   const [addMode,setAddMode]=useState(false);
 
   useEffect(()=>simulation.subscribe(snapshot=>setGame(snapshot as GameState)),[simulation]);
@@ -93,10 +96,11 @@ export default function App() {
   const train=(kind:UnitKind)=>simulation.dispatch({type:'units/train',unitKind:kind});
   const selectUnit=(id:number,isEnemy:boolean,multi:boolean)=>{
     if(game.outcome!=='playing')return;
-    if(isEnemy){simulation.dispatch({type:'units/attack',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id),targetUnitId:id});setMoveMode(false);return;}
+    if(isEnemy){simulation.dispatch({type:'units/attack',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id),targetUnitId:id});setMoveMode(false);setRallyMode(false);return;}
     simulation.dispatch({type:'units/select',unitIds:[id],additive:multi});
   };
   const moveUnits=(x:number,z:number)=>{
+    if(rallyMode){simulation.dispatch({type:'units/set-rally-point',x,z});setRallyMode(false);setMoveMode(false);return;}
     if(!moveMode)return;
     simulation.dispatch({type:'units/move',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id),x,z});setMoveMode(false);
   };
@@ -127,7 +131,7 @@ export default function App() {
     <section className="command-panel">
       <div className="panel-head"><div><small>مركز القيادة التكتيكية</small><h1>إدارة عمليات القاعدة</h1></div><div className="online"><span/> {running?'المحاكاة تعمل':'المحاكاة متوقفة مؤقتاً'}</div></div>
       <div className="tabs"><button className={tab==='command'?'active':''} onClick={()=>setTab('command')}>الأوامر</button><button className={tab==='build'?'active':''} onClick={()=>setTab('build')}>البناء</button><button className={tab==='army'?'active':''} onClick={()=>setTab('army')}>الجيش والتدريب</button></div>
-      {tab==='command'&&<div className="command-content"><div className="briefing"><span className="brief-icon">⌖</span><div><b>التوجيهات العسكرية</b><p>{moveMode?'اختر نقطة على أرض المعركة لتحريك الوحدات المحددة إليها.':'حدد جنودك أو دباباتك، ثم حرّكهم أو هاجم قوات العدو. يمكنك إصدار أمر بمهاجمة مقر العدو.'}</p></div></div><div className="action-row"><button className={moveMode?'primary-action':''} disabled={!selectedCount||game.outcome!=='playing'} onClick={()=>{setMoveMode(v=>!v);setRallyMode(false);}}>{moveMode?'✕ إلغاء الحركة':'➤ تحريك'}</button><button className={rallyMode?'primary-action':''} disabled={game.outcome!=='playing'} onClick={()=>{setRallyMode(v=>!v);setMoveMode(false);}}>{rallyMode?'✕ إلغاء التجمع':'⚑ نقطة تجمّع'}</button>{game.rallyPoint&&<button onClick={()=>simulation.dispatch({type:'units/clear-rally-point'})}>إلغاء نقطة التجمع</button>}<button className={addMode?'primary-action':''} onClick={()=>setAddMode(v=>!v)}>{addMode?'✓ وضع الإضافة مفعّل':'＋ تحديد عدة وحدات'}</button><button disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/hold',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>Ⅱ تثبيت</button><button className="assault-action" disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/attack-base',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>⚑ هجوم على المقر</button><button onClick={()=>{setRunning(!running);simulation.restore({...simulation.getSnapshot(),message:running?'SIMULATION PAUSED':'SIMULATION RESUMED'});}}>{running?'Ⅱ إيقاف مؤقت':'▶ متابعة'}</button><button onClick={load}>↧ تحميل</button></div></div>}
+      {tab==='command'&&<div className="command-content"><div className="briefing"><span className="brief-icon">⌖</span><div><b>التوجيهات العسكرية</b><p>{rallyMode?'اختر موقعاً على الخريطة لتحديد نقطة وصول التعزيزات الجديدة.':moveMode?'اختر نقطة على أرض المعركة لتحريك الوحدات المحددة إليها.':'حدد جنودك أو دباباتك، ثم حرّكهم أو هاجم قوات العدو. يمكنك إصدار أمر بمهاجمة مقر العدو.'}</p></div></div><div className="action-row"><button className={moveMode?'primary-action':''} disabled={!selectedCount||game.outcome!=='playing'} onClick={()=>{setMoveMode(v=>!v);setRallyMode(false);}}>{moveMode?'✕ إلغاء الحركة':'➤ تحريك'}</button><button className={rallyMode?'primary-action':''} disabled={game.outcome!=='playing'} onClick={()=>{setRallyMode(v=>!v);setMoveMode(false);}}>{rallyMode?'✕ إلغاء التجمع':'⚑ نقطة تجمّع'}</button>{game.rallyPoint&&<button onClick={()=>simulation.dispatch({type:'units/clear-rally-point'})}>إلغاء نقطة التجمع</button>}<button className={addMode?'primary-action':''} onClick={()=>setAddMode(v=>!v)}>{addMode?'✓ وضع الإضافة مفعّل':'＋ تحديد عدة وحدات'}</button><button disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/hold',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>Ⅱ تثبيت</button><button className="assault-action" disabled={!selectedCount} onClick={()=>simulation.dispatch({type:'units/attack-base',unitIds:game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).map(u=>u.id)})}>⚑ هجوم على المقر</button><button onClick={()=>{setRunning(!running);simulation.restore({...simulation.getSnapshot(),message:running?'SIMULATION PAUSED':'SIMULATION RESUMED'});}}>{running?'Ⅱ إيقاف مؤقت':'▶ متابعة'}</button><button onClick={load}>↧ تحميل</button></div></div>}
       {tab==='build'&&<div className="construction-wrap"><div className="construction-grid">{BUILDINGS.map(spec=>{const active=game.buildings.some(b=>b.kind===spec.kind&&b.status==='active');const inProgress=game.buildings.find(b=>b.kind===spec.kind&&b.status==='constructing');const limitReached=count(spec.kind)>=(spec.kind==='watchtower'?4:1);return <article className="construction-card" key={spec.kind}><div className="building-symbol">{spec.short}</div><div className="building-copy"><b>{buildingNames[spec.kind]}</b><small>{buildingDescriptions[spec.kind]}</small><em>{spec.cost.steel} فولاذ · {spec.cost.fuel} وقود · {spec.cost.power} طاقة · {spec.seconds} ثانية</em>{inProgress&&<div className="progress"><i style={{width:(100*(1-inProgress.remaining/inProgress.buildSeconds))+'%'}}/></div>}{active&&<span className="built-label">يعمل · المستوى 1</span>}</div><button disabled={active||!!inProgress||limitReached||game.outcome!=='playing'} onClick={()=>build(spec.kind)}>{active?'مبني':inProgress?'قيد البناء':limitReached?'الحد الأقصى':'بناء'}</button></article>;})}</div></div>}
       {tab==='army'&&<div className="army-panel">
         <div className="recruit-card"><div className="recruit-symbol tank-symbol">د</div><div><b>دبابة قتال رئيسية</b><small>120 صحة · درع ثقيل · 27 ضرر</small><em>260 فولاذ · 90 وقود · 24 ذخيرة · 18 ثانية</em></div><button disabled={!game.buildings.some(b=>b.kind==='factory'&&b.status==='active')||game.trainingQueue.length>=4||game.outcome!=='playing'} onClick={()=>train('tank')}>تدريب</button></div>
