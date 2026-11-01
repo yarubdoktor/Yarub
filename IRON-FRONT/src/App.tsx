@@ -40,7 +40,6 @@ export default function App() {
   const save=()=>{try{localStorage.setItem('iron-front-save-v4',JSON.stringify(game));setGame(g=>({...g,message:'FORTRESS, REINFORCEMENTS AND MISSION STATE SAVED'}));}catch{setGame(g=>({...g,message:'SAVE FAILED — STORAGE UNAVAILABLE'}));}};
   const load=()=>{try{const raw=localStorage.getItem('iron-front-save-v4')||localStorage.getItem('iron-front-save-v3');if(raw){const saved=JSON.parse(raw) as Partial<GameState>;setGame({...initialGameState,...saved,trainingQueue:saved.trainingQueue||[],wave:saved.wave||0,outcome:saved.outcome||'playing',nextTrainingId:saved.nextTrainingId||1});setMoveMode(false);setRunning(true);}else setGame(g=>({...g,message:'NO SAVED MISSION FOUND'}));}catch{setGame(g=>({...g,message:'SAVE DATA COULD NOT BE LOADED'}));}};
   const restart=()=>{setGame(initialGameState);setRunning(true);setMoveMode(false);setAddMode(false);setTab('command');};
-  const constructionCount=game.buildings.filter(b=>b.status==='constructing').length;
   const count=(kind:BuildingKind)=>game.buildings.filter(b=>b.kind===kind).length;
   const selectedCount=game.units.filter(u=>u.faction==='player'&&u.selected&&u.hp>0).length;
   const playerUnits=game.units.filter(u=>u.faction==='player'&&u.hp>0);
