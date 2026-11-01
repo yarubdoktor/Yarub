@@ -12,8 +12,13 @@ export function queueUnit(state:GameState,kind:UnitKind):GameState {
     return {...state,message:kind==='tank'?'BUILD AN ARMORED FACTORY FIRST':'FIELD BARRACKS REQUIRED'};
   if(state.trainingQueue.length>=4)return {...state,message:'REINFORCEMENT QUEUE IS FULL'};
   const cost=TRAINING[kind];
-  if(state.resources.steel<cost.steel||state.resources.fuel<cost.fuel||state.resources.ammo<cost.ammo)
-    return {...state,message:'INSUFFICIENT STEEL, FUEL OR AMMUNITION'};
+  const missing=[
+    state.resources.steel<cost.steel?'الفولاذ '+state.resources.steel+'/'+cost.steel:'',
+    state.resources.fuel<cost.fuel?'الوقود '+state.resources.fuel+'/'+cost.fuel:'',
+    state.resources.ammo<cost.ammo?'الذخيرة '+state.resources.ammo+'/'+cost.ammo:'',
+  ].filter(Boolean);
+  if(missing.length)
+    return {...state,message:'موارد التدريب غير كافية — الناقص: '+missing.join('، ')};
   const order={id:state.nextTrainingId,kind,remaining:cost.seconds,seconds:cost.seconds};
   return {...state,resources:{...state.resources,steel:state.resources.steel-cost.steel,fuel:state.resources.fuel-cost.fuel,ammo:state.resources.ammo-cost.ammo},
     trainingQueue:[...state.trainingQueue,order],nextTrainingId:state.nextTrainingId+1,message:(kind==='tank'?'ARMORED VEHICLE':'INFANTRY SQUAD')+' ADDED TO REINFORCEMENT QUEUE'};
