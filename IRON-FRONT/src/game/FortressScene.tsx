@@ -16,25 +16,43 @@ function Terrain() {
 }
 
 function FortressWalls() {
-  const wallMat='#777f7b';
-  const segments=[
-    {p:[-12,1.05,-3.2] as [number,number,number],s:[19,.95,.7] as [number,number,number]},
-    {p:[-12,1.05,11.2] as [number,number,number],s:[19,.95,.7] as [number,number,number]},
-    {p:[-21.2,1.05,4] as [number,number,number],s:[.7,.95,14.8] as [number,number,number]},
-    {p:[-2.8,1.05,1.1] as [number,number,number],s:[.7,.95,8.2] as [number,number,number]},
-    {p:[-2.8,1.05,8.4] as [number,number,number],s:[.7,.95,5.6] as [number,number,number]},
+  const sections = [
+    {x:-12,z:-3.2,sx:19,sz:.7,axis:'x' as const},
+    {x:-12,z:11.2,sx:19,sz:.7,axis:'x' as const},
+    {x:-21.2,z:4,sx:.7,sz:14.8,axis:'z' as const},
+    {x:-2.8,z:-1,sx:.7,sz:4.4,axis:'z' as const},
+    {x:-2.8,z:9.1,sx:.7,sz:4.2,axis:'z' as const},
   ];
   return <group>
-    {segments.map((w,i)=><group key={i} position={w.p}><mesh castShadow receiveShadow><boxGeometry args={w.s}/><meshStandardMaterial color={wallMat} metalness={.35} roughness={.8}/></mesh>
-      {Array.from({length:Math.max(2,Math.floor((w.s[0]+w.s[2])/2.4))},(_,j)=><mesh key={j} position={[w.s[0]===.7?0:-w.s[0]/2+1+j*2.4,.62,0]}><boxGeometry args={[.55,.45,.8]}/><meshStandardMaterial color="#9ba39d"/></mesh>)}
-    </group>)}
-    <mesh position={[-2.8,1.05,4.75]} castShadow><boxGeometry args={[.95,1.9,2.6]}/><meshStandardMaterial color="#8c744c" metalness={.45}/></mesh>
+    {sections.map((w,i)=>{
+      const length=w.axis==='x'?w.sx:w.sz;
+      const count=Math.max(2,Math.floor(length/2.1));
+      return <group key={i} position={[w.x,0,w.z]}>
+        <mesh position={[0,1.05,0]} castShadow receiveShadow>
+          <boxGeometry args={[w.sx,.95,w.sz}/>
+          <meshStandardMaterial color="#777f7b" metalness={.35} roughness={.8}/>
+        </mesh>
+        {Array.from({length:count},(_,j)=>{
+          const along=-length/2+1+j*(length-2)/(count-1);
+          return <mesh key={j} position={w.axis==='x'?[along,1.72,0]:[0,1.72,along]}>
+            <boxGeometry args={w.axis==='x'?[.58,.42,.82]:[.82,.42,.58]}/>
+            <meshStandardMaterial color="#9ba39d"/>
+          </mesh>;
+        })}
+      </group>;
+    })}
     {[-20.8,-3.2].map((x,i)=>[-2.8,10.8].map((z,j)=><group key={i+'-'+j} position={[x,0,z]}>
       <mesh position={[0,.9,0]} castShadow><boxGeometry args={[1.7,1.8,1.7]}/><meshStandardMaterial color="#596663"/></mesh>
       <mesh position={[0,1.95,0]} castShadow><cylinderGeometry args={[.95,.95,.35,8]}/><meshStandardMaterial color="#9d895e" metalness={.5}/></mesh>
       <mesh position={[0,2.35,0]}><cylinderGeometry args={[.08,.08,.7,8]}/><meshStandardMaterial color="#343d3b"/></mesh>
       <mesh position={[0,2.75,0]}><sphereGeometry args={[.12,8,8]}/><meshBasicMaterial color="#e2b85d"/></mesh>
     </group>))}
+    <group position={[-2.8,0,4.1]}>
+      <mesh position={[0,1, -.78]} castShadow><boxGeometry args={[.65,1.9,1.05]}/><meshStandardMaterial color="#8c744c" metalness={.45}/></mesh>
+      <mesh position={[0,1, .78]} castShadow><boxGeometry args={[.65,1.9,1.05]}/><meshStandardMaterial color="#8c744c" metalness={.45}/></mesh>
+      <mesh position={[0,2.08,0]}><boxGeometry args={[.8,.18,2.9]}/><meshStandardMaterial color="#a28a5c" metalness={.4}/></mesh>
+      <mesh position={[0,1.12,0]}><boxGeometry args={[.08,1.8,.08]}/><meshBasicMaterial color="#d9b56b"/></mesh>
+    </group>
   </group>;
 }
 
