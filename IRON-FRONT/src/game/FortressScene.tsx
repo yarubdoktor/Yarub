@@ -1,37 +1,16 @@
-import { useMemo, useRef } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import type { Group } from 'three';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
 import type { Building, BuildingKind, GameState, Unit } from './types';
 
 function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;target:Vector3}) {
   const trees=useMemo(()=>Array.from({length:110},(_,i)=>({x:Math.sin(i*17.31)*66,z:Math.cos(i*9.17)*38,s:.65+(i%4)*.16})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5),[]);
-  const {camera}=useThree();
-  const drag=useRef<{pointerId:number;x:number;y:number}|null>(null);
-  const dragged=useRef(false);
-  const pan=(e:ThreeEvent<PointerEvent>)=>{
-    if(!drag.current||drag.current.pointerId!==e.pointerId)return;
-    const dx=e.nativeEvent.clientX-drag.current.x,dy=e.nativeEvent.clientY-drag.current.y;
-    if(Math.abs(dx)+Math.abs(dy)>2)dragged.current=true;
-        const scale=camera.position.distanceTo(target)*.00062;
-    const right=new Vector3().setFromMatrixColumn(camera.matrixWorld,0);right.y=0;right.normalize();
-    const forward=new Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();
-    const shift=right.multiplyScalar(-dx*scale).add(forward.multiplyScalar(dy*scale));
-    const nx=Math.max(-66,Math.min(66,target.x+shift.x));
-    const nz=Math.max(-41,Math.min(41,target.z+shift.z));
-    const applied=new Vector3(nx-target.x,0,nz-target.z);
-    camera.position.add(applied);target.add(applied);drag.current={pointerId:e.pointerId,x:e.nativeEvent.clientX,y:e.nativeEvent.clientY};
-  };
   return <group>
     <mesh rotation={[-Math.PI/2,0,0]} receiveShadow
-      onPointerDown={e=>{if(e.button!==0)return;e.stopPropagation();drag.current={pointerId:e.pointerId,x:e.nativeEvent.clientX,y:e.nativeEvent.clientY};dragged.current=false;(e.nativeEvent.currentTarget as HTMLCanvasElement).setPointerCapture(e.pointerId);}}
-      onPointerMove={pan}
-      onPointerUp={e=>{if(drag.current?.pointerId===e.pointerId){drag.current=null;(e.nativeEvent.currentTarget as HTMLCanvasElement).releasePointerCapture(e.pointerId);}}}
-      onPointerCancel={()=>{drag.current=null;}}
-      onClick={e=>{e.stopPropagation();if(dragged.current){dragged.current=false;return;}onMoveOrder(e.point.x,e.point.z);}}>
+      onClick={e=>{e.stopPropagation();onMoveOrder(e.point.x,e.point.z);}}>
       <planeGeometry args={[140,90]}/><meshStandardMaterial color="#29352f" roughness={1}/></mesh>
     <gridHelper args={[140,140,'#566253','#39463d']} position={[0,.018,0]}/>
     {trees.map((t,i)=><group key={i} position={[t.x,0,t.z]} scale={t.s}>
@@ -39,6 +18,52 @@ function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;tar
       <mesh position={[0,1.75,0]} castShadow><coneGeometry args={[.85,2.2,7]}/><meshStandardMaterial color="#263d32"/></mesh>
     </group>)}
   </group>;
+}
+
+function CameraPanControls({target}:{target:Vector3}) {
+  const {camera,gl}=useThree();
+  const pointers=useRef(new Map<number,{x:number;y:number}>());
+  const last=useRef<{x:number;y:number}|null>(null);
+  useEffect(()=>{
+    const element=gl.domElement;
+    const down=(event:PointerEvent)=>{
+      pointers.current.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if(pointers.current.size===1)last.current={x:event.clientX,y:event.clientY};
+      else last.current=null; // Two fingers are reserved for pinch zoom.
+    };
+    const move=(event:PointerEvent)=>{
+      if(!pointers.current.has(event.pointerId))return;
+      pointers.current.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if(pointers.current.size!==1||!last.current)return;
+      const dx=event.clientX-last.current.x,dy=event.clientY-last.current.y;
+      last.current={x:event.clientX,y:event.clientY};
+      if(Math.abs(dx)+Math.abs(dy)<.1)return;
+      const scale=camera.position.distanceTo(target)*.0009;
+      const right=new Vector3().setFromMatrixColumn(camera.matrixWorld,0);right.y=0;right.normalize();
+      const forward=new Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();
+      const shift=right.multiplyScalar(-dx*scale).add(forward.multiplyScalar(dy*scale));
+      const nx=Math.max(-66,Math.min(66,target.x+shift.x));
+      const nz=Math.max(-41,Math.min(41,target.z+shift.z));
+      const applied=new Vector3(nx-target.x,0,nz-target.z);
+      camera.position.add(applied);
+      target.add(applied);
+    };
+    const up=(event:PointerEvent)=>{
+      pointers.current.delete(event.pointerId);
+      last.current=pointers.current.size===1?[...pointers.current.values()][0]:null;
+    };
+    element.addEventListener('pointerdown',down,{passive:true});
+    element.addEventListener('pointermove',move,{passive:true});
+    element.addEventListener('pointerup',up,{passive:true});
+    element.addEventListener('pointercancel',up,{passive:true});
+    return ()=>{
+      element.removeEventListener('pointerdown',down);
+      element.removeEventListener('pointermove',move);
+      element.removeEventListener('pointerup',up);
+      element.removeEventListener('pointercancel',up);
+    };
+  },[camera,gl,target]);
+  return null;
 }
 
 function FortressWalls() {
@@ -84,7 +109,7 @@ function UnitMesh({unit,onSelect}:{unit:Unit;onSelect:(id:number,enemy:boolean,m
     if(unit.order!=='idle'){
       const dx=unit.targetX-object.position.x,dz=unit.targetZ-object.position.z;
       if(Math.hypot(dx,dz)>.18){
-        const desired=Math.atan2(dx,dz);
+        const desired=Math.atan2(-dx,-dz);
         let difference=(desired-object.rotation.y+Math.PI)%(Math.PI*2);
         if(difference<0)difference+=Math.PI*2;
         difference-=Math.PI;
@@ -141,7 +166,7 @@ export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSe
   return <Canvas shadows camera={{position:[-1,25,31],fov:42}} dpr={[1,1.5]}> 
     <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',45,145]}/>
     <ambientLight intensity={.68}/><directionalLight position={[-12,24,8]} intensity={2.15} castShadow shadow-mapSize={[2048,2048]}/>
-    <Terrain onMoveOrder={onMoveOrder} target={cameraTarget}/><FortressWalls/><MineLogistics state={state}/>
+    <CameraPanControls target={cameraTarget}/><Terrain onMoveOrder={onMoveOrder} target={cameraTarget}/><FortressWalls/><MineLogistics state={state}/>
     {state.rallyPoint&&<group position={[state.rallyPoint.x,.035,state.rallyPoint.z]}>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.15,1.42,48]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.95}/></mesh>
       <mesh rotation={[-Math.PI/2,0,0]}><ringGeometry args={[.18,.28,24]}/><meshBasicMaterial color="#d9f8ff"/></mesh>
