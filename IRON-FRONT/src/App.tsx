@@ -59,6 +59,8 @@ function arabicMessage(message:string):string {
   if(m)return 'تم رصد موجة تعزيزات العدو رقم '+m[1]+' — وصلت قوات العدو إلى الحد الأقصى.';
   m=message.match(/^HOSTILE REINFORCEMENT WAVE (\d+) INBOUND$/);
   if(m)return 'موجة تعزيزات العدو رقم '+m[1]+' في الطريق!';
+  m=message.match(/^(\\d+) UNIT\\(S\\) MOVING IN FORMATION$/);
+  if(m)return 'القوات تتقدم بتشكيل منظم: '+m[1]+' وحدة.';
   if(message==='HOSTILE UNIT DESTROYED')return 'تم تدمير وحدة معادية.';
   if(message==='FRIENDLY UNIT LOST')return 'خسرت إحدى وحداتك.';
   if(message.endsWith(' CONSTRUCTION STARTED'))return 'بدأ بناء: '+message.replace(' CONSTRUCTION STARTED','')+'.';
