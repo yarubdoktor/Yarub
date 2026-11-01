@@ -29,7 +29,7 @@ function FortressWalls() {
       const count=Math.max(2,Math.floor(length/2.1));
       return <group key={i} position={[w.x,0,w.z]}>
         <mesh position={[0,1.05,0]} castShadow receiveShadow>
-          <boxGeometry args={[w.sx,.95,w.sz}/>
+          <boxGeometry args={[w.sx,.95,w.sz]}/>
           <meshStandardMaterial color="#777f7b" metalness={.35} roughness={.8}/>
         </mesh>
         {Array.from({length:count},(_,j)=>{
