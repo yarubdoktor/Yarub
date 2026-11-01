@@ -102,7 +102,7 @@ export function advanceEnemyWaves(state:GameState):GameState {
     const id=state.nextUnitId+i;
     const tank=wave>=2&&i===0;
     const kind=tank?'tank':'infantry';
-    const x=15+(i%2)*2.1,z=-7+((i*4+wave)%5)*3.2;
+    const x=26+(i%2)*2.1,z=-13+((i*4+wave)%5)*2.2;
     return {id,faction:'enemy',x,z,hp:tank?115:75,maxHp:tank?115:75,kind,selected:false,order:'idle',targetX:x,targetZ:z,targetId:null,
       range:tank?5.2:3.4,damage:tank?18:9,speed:tank?1.05:1.35,cooldown:0};
   });
