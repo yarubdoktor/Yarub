@@ -1,9 +1,9 @@
 import type { GameState } from './model';
 import type { GameCommand, SimulationPort, SimulationSnapshot } from './contracts';
 import type { GameEngine } from '../core/GameEngine';
-import { queueBuilding } from '../../game/buildingSystem';
-import { issueAttack, issueAttackBase, issueMove, holdSelected } from '../../game/combatSystem';
-import { queueUnit } from '../../game/trainingSystem';
+import { queueBuilding } from './systems/buildingSystem';
+import { issueAttack, issueAttackBase, issueMove, holdSelected } from './systems/combatSystem';
+import { queueUnit } from './systems/trainingSystem';
 
 /**
  * Owns the authoritative single-player state.
