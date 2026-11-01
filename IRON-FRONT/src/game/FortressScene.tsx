@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import type { ThreeEvent } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import type { Group } from 'three';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
@@ -27,6 +26,8 @@ function CameraPanControls({target}:{target:Vector3}) {
   useEffect(()=>{
     const element=gl.domElement;
     const down=(event:PointerEvent)=>{
+      if(event.pointerType==='mouse'&&event.button!==0)return;
+      try{element.setPointerCapture(event.pointerId);}catch{/* Pointer may already be captured by the renderer. */}
       pointers.current.set(event.pointerId,{x:event.clientX,y:event.clientY});
       if(pointers.current.size===1)last.current={x:event.clientX,y:event.clientY};
       else last.current=null; // Two fingers are reserved for pinch zoom.
