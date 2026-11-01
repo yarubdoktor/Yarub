@@ -18,5 +18,7 @@ export type GameOutcome = 'playing' | 'victory' | 'defeat';
 export type GameState = {
   resources:Resources; buildings:Building[]; units:Unit[]; trainingQueue:TrainingOrder[];
   enemyHp:number; baseHp:number; tick:number; wave:number; outcome:GameOutcome;
+  /** Global rally point used by newly trained friendly reinforcements. */
+  rallyPoint:{x:number;z:number}|null;
   message:string; nextBuildingId:number; nextUnitId:number; nextTrainingId:number;
 };
