@@ -1,9 +1,11 @@
 import type { GameState } from './types';
+import { INITIAL_LOGISTICS } from '../engine/simulation/systems/logisticsSystem';
 
 export const initialGameState:GameState = {
   resources:{steel:900,fuel:650,power:260,ammo:360},
   resourceCapacity:{steel:2500,fuel:1800,power:1200,ammo:1200},
   powerGrid:{generation:2,demand:1,supplied:1},
+  logistics:INITIAL_LOGISTICS,
   buildings:[
     {id:'HQ-001',kind:'hq',level:1,hp:100,maxHp:100,x:-12,z:4,status:'active',remaining:0,buildSeconds:0,powered:true},
     {id:'BLD-000',kind:'barracks',level:1,hp:100,maxHp:100,x:-8.2,z:5.2,status:'active',remaining:0,buildSeconds:0,powered:true},
