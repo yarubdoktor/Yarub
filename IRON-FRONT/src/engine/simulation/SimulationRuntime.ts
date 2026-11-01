@@ -23,12 +23,12 @@ export class SimulationRuntime implements SimulationPort {
 
   subscribe(listener: (snapshot: SimulationSnapshot) => void): () => void {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => { this.listeners.delete(listener); };
   }
 
   dispatch(command: GameCommand): void {
     if (this.state.outcome !== 'playing' && command.type !== 'units/select') return;
-    const selected = new Set(command.type === 'units/select' ? command.unitIds : command.unitIds);
+    const selected = 'unitIds' in command ? new Set(command.unitIds) : new Set<number>();
     let next = this.state;
 
     switch (command.type) {
