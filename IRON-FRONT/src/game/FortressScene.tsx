@@ -25,9 +25,9 @@ function Terrain({onMoveOrder,target}:{onMoveOrder:(x:number,z:number)=>void;tar
   };
   return <group>
     <mesh rotation={[-Math.PI/2,0,0]} receiveShadow
-      onPointerDown={e=>{if(e.button!==0)return;e.stopPropagation();drag.current={pointerId:e.pointerId,x:e.nativeEvent.clientX,y:e.nativeEvent.clientY};dragged.current=false;e.target.setPointerCapture(e.pointerId);}}
+      onPointerDown={e=>{if(e.button!==0)return;e.stopPropagation();drag.current={pointerId:e.pointerId,x:e.nativeEvent.clientX,y:e.nativeEvent.clientY};dragged.current=false;(e.nativeEvent.currentTarget as HTMLCanvasElement).setPointerCapture(e.pointerId);}}
       onPointerMove={pan}
-      onPointerUp={e=>{if(drag.current?.pointerId===e.pointerId){drag.current=null;e.target.releasePointerCapture(e.pointerId);}}}
+      onPointerUp={e=>{if(drag.current?.pointerId===e.pointerId){drag.current=null;(e.nativeEvent.currentTarget as HTMLCanvasElement).releasePointerCapture(e.pointerId);}}}
       onPointerCancel={()=>{drag.current=null;}}
       onClick={e=>{e.stopPropagation();if(dragged.current){dragged.current=false;return;}onMoveOrder(e.point.x,e.point.z);}}>
       <planeGeometry args={[140,90]}/><meshStandardMaterial color="#29352f" roughness={1}/></mesh>
