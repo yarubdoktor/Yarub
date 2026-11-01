@@ -4,10 +4,10 @@ import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
 import type { Building, BuildingKind, GameState, Unit } from './types';
 
 function Terrain({onMoveOrder}:{onMoveOrder:(x:number,z:number)=>void}) {
-  const trees=useMemo(()=>Array.from({length:54},(_,i)=>({x:Math.sin(i*17.31)*21,z:Math.cos(i*9.17)*15,s:.65+(i%4)*.16})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5),[]);
+  const trees=useMemo(()=>Array.from({length:110},(_,i)=>({x:Math.sin(i*17.31)*66,z:Math.cos(i*9.17)*38,s:.65+(i%4)*.16})).filter(p=>Math.abs(p.x)>5||Math.abs(p.z)>5),[]);
   return <group>
-    <mesh rotation={[-Math.PI/2,0,0]} receiveShadow onClick={e=>{e.stopPropagation();onMoveOrder(e.point.x,e.point.z);}}><planeGeometry args={[78,58]}/><meshStandardMaterial color="#29352f" roughness={1}/></mesh>
-    <gridHelper args={[78,78,'#566253','#39463d']} position={[0,.018,0]}/>
+    <mesh rotation={[-Math.PI/2,0,0]} receiveShadow onClick={e=>{e.stopPropagation();onMoveOrder(e.point.x,e.point.z);}}><planeGeometry args={[140,90]}/><meshStandardMaterial color="#29352f" roughness={1}/></mesh>
+    <gridHelper args={[140,140,'#566253','#39463d']} position={[0,.018,0]}/>
     {trees.map((t,i)=><group key={i} position={[t.x,0,t.z]} scale={t.s}>
       <mesh position={[0,.7,0]} castShadow><cylinderGeometry args={[.13,.2,1.4,6]}/><meshStandardMaterial color="#514538"/></mesh>
       <mesh position={[0,1.75,0]} castShadow><coneGeometry args={[.85,2.2,7]}/><meshStandardMaterial color="#263d32"/></mesh>
@@ -55,7 +55,7 @@ function UnitMesh({unit,onSelect}:{unit:Unit;onSelect:(id:number,enemy:boolean,m
 
 export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSelect:(id:number,enemy:boolean,multi:boolean)=>void;onMoveOrder:(x:number,z:number)=>void}) {
   return <Canvas shadows camera={{position:[-1,25,31],fov:42}} dpr={[1,1.5]}>
-    <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',30,75]}/>
+    <color attach="background" args={['#111a1c']}/><fog attach="fog" args={['#111a1c',45,145]}/>
     <ambientLight intensity={.68}/><directionalLight position={[-12,24,8]} intensity={2.15} castShadow shadow-mapSize={[2048,2048]}/>
     <Terrain onMoveOrder={onMoveOrder}/><FortressWalls/>
     {state.rallyPoint&&<group position={[state.rallyPoint.x,.035,state.rallyPoint.z]}>
@@ -64,9 +64,9 @@ export function FortressScene({state,onSelect,onMoveOrder}:{state:GameState;onSe
       <mesh position={[0,1.15,0]}><cylinderGeometry args={[.035,.035,2.3,8]}/><meshBasicMaterial color="#55d8ff" transparent opacity={.55}/></mesh>
     </group>}
     {state.buildings.map(b=><Structure key={b.id} building={b}/>)}
-    <group position={[20,0,-4]}><mesh position={[0,.6,0]} castShadow><boxGeometry args={[4,1.2,3.6]}/><meshStandardMaterial color="#8e3b32" metalness={.5}/></mesh><mesh position={[0,1.55,0]}><boxGeometry args={[2,.8,2]}/><meshStandardMaterial color="#542a27"/></mesh><mesh position={[0,2.3,0]}><sphereGeometry args={[.13,8,8]}/><meshBasicMaterial color="#ff503d"/></mesh></group>
+    <group position={[54,0,-8]}><mesh position={[0,.6,0]} castShadow><boxGeometry args={[4,1.2,3.6]}/><meshStandardMaterial color="#8e3b32" metalness={.5}/></mesh><mesh position={[0,1.55,0]}><boxGeometry args={[2,.8,2]}/><meshStandardMaterial color="#542a27"/></mesh><mesh position={[0,2.3,0]}><sphereGeometry args={[.13,8,8]}/><meshBasicMaterial color="#ff503d"/></mesh></group>
     {state.units.map(u=><UnitMesh key={u.id} unit={u} onSelect={onSelect}/>)}
     <ContactShadows position={[0,.02,0]} opacity={.4} scale={55} blur={2.5} far={18}/>
-    <Environment preset="sunset"/><OrbitControls makeDefault target={[-1,0,3]} maxPolarAngle={Math.PI/2.08} minDistance={13} maxDistance={52} enableDamping dampingFactor={.08}/>
+    <Environment preset="sunset"/><OrbitControls makeDefault target={[-1,0,3]} maxPolarAngle={Math.PI/2.08} minDistance={13} maxDistance={88} enableDamping dampingFactor={.08}/>
   </Canvas>;
 }
